@@ -45,4 +45,20 @@ public class CodingExercise {
     public static boolean isYearValid(int year) {
         return (year >= 1) && (year <= 9999);
     }
+
+    public static boolean isOdd(int number) {
+        return number > 0 && number % 2 != 0;
+    }
+
+    public static int sumOdd(int start, int end) {
+        int sum = 0;
+        for (int i = start; i < end + 1; i++) {
+            sum += isOdd(i) ? i : 0;
+        }
+        if (start > end || start < 0) {
+            sum = -1;
+        }
+        return sum;
+    }
+
 }

@@ -1,25 +1,10 @@
+import java.util.ArrayList;
+
 public class Main {
 
     public static void main(String[] args) {
 
         int switchValue = 4;
-
-//        switch (switchValue) {
-//            case 1:
-//                System.out.println("Value was 1");
-//                break;
-//            case 2:
-//                System.out.println("Value was 2");
-//                break;
-//            case 3: case 4: case 5:
-//                System.out.println("Was a 3, a 4, or a 5");
-//                System.out.println("Actually it was a " + switchValue);
-//                break;
-//            default:
-//                System.out.println("Was not 1, 2, 3, 4, or 5");
-//                break;
-//        }
-
         switch (switchValue) {
             case 1 -> System.out.println("Value was 1");
             case 2 -> System.out.println("Value was 2");
@@ -37,6 +22,82 @@ public class Main {
 
         printWeekDay(2);
         printDayOfWeek(3);
+
+        System.out.println();
+        for (double i = 7.5; i <= 10; i += .25) {
+            double interestAmount = calculateInterest(100, i);
+            if (interestAmount > 8.5) {
+                break;
+            }
+            System.out.println("$100.00 at " + i + "% interest = $" + interestAmount);
+        }
+
+        ArrayList<Integer> list = new ArrayList<>();
+        for (int i = 1; i < 100; i++) {
+            if (isPrime(i)) {
+                list.add(i);
+            }
+        }
+        System.out.println("\n1 to 100 prime numbers: " + list);
+        System.out.println(list.size() + " prime found");
+
+        System.out.println();
+        int sum = 0;
+        int count = 0;
+        for (int i = 1; i < 1000; i++) {
+            if ((i % 3 == 0) && (i % 5 == 0)) {
+                sum += i;
+                count++;
+                System.out.println("Found a match = " + i);
+            }
+            if (count == 5) {
+                break;
+            }
+        }
+        System.out.println("sum = " + sum + "\n");
+
+        int j = 1;
+        while (j <= 5) {
+            System.out.println(j);
+            j++;
+        }
+
+        do {
+            System.out.println("Do while: " + j);
+            j++;
+        } while (j <= 5);
+
+        System.out.println();
+        int number = 0;
+        while (number < 50) {
+            number += 5;
+            if (number % 25 == 0) {
+                continue;
+            }
+            System.out.print(number + "_");
+        }
+
+        System.out.println();
+        int test = 4;
+        int oddCound = 0;
+        int evenCound = 0;
+        while (test <= 20) {
+            test++;
+            if (!isEvenNumber(test)) {
+                oddCound++;
+                continue;
+            }
+            System.out.print(test + " ");
+            evenCound++;
+
+            if (evenCound == 5) {
+                break;
+            }
+        }
+        System.out.println("\nNumber of even numbers found: " + evenCound);
+        System.out.println("Number of odd numbers found: " + oddCound);
+
+        System.out.println(sumDigits(125));
     }
 
     public static String getQuarter(String month) {
@@ -74,4 +135,38 @@ public class Main {
             System.out.println("Invalid Day");
         }
     }
+
+    public static double calculateInterest(double amount, double interestRate) {
+        return (amount * (interestRate / 100));
+    }
+
+    public static boolean isPrime(int number) {
+        boolean result = number == 2 || (number > 2 && number % 2 != 0);
+
+        for (int i = 3; i * i <= number && result; i += 2) {
+            if (number % i == 0) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static boolean isEvenNumber(int number) {
+        return number % 2 == 0;
+    }
+
+    public static int sumDigits(int number) {
+        if (number < 0) {
+            return -1;
+        }
+        int temp = number;
+        int sum = 0;
+        while (temp != 0) {
+            sum += temp % 10;
+            temp /= 10;
+        }
+        return sum;
+    }
+
 }
