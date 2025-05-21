@@ -1,4 +1,7 @@
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 public class Main {
 
@@ -98,6 +101,19 @@ public class Main {
         System.out.println("Number of odd numbers found: " + oddCound);
 
         System.out.println(sumDigits(125));
+
+        System.out.println();
+        int currentYear = ZonedDateTime.now().getYear();
+
+//        try {
+//            System.out.println(getInputFromConsole(currentYear));
+//        } catch (NullPointerException e) {
+//            System.out.println(getInputFromScanner(currentYear));
+//        }
+
+//        System.out.println(userInputSum(5));
+
+        minMaxChallenge();
     }
 
     public static String getQuarter(String month) {
@@ -124,7 +140,7 @@ public class Main {
             case 7 -> "Sunday";
             default -> "Invalid Day";
         };
-        System.out.println(day + " stands for " +dayOfWeek);
+        System.out.println(day + " stands for " + dayOfWeek);
     }
 
     public static void printWeekDay(int dayOfWeek) {
@@ -169,4 +185,104 @@ public class Main {
         return sum;
     }
 
+    public static String getInputFromConsole(int currentYear) {
+        String name = System.console().readLine("Hi, What's your Name? ");
+        System.out.println("Hi " + name);
+
+        String dateOfBirth = System.console().readLine("What year were you born? ");
+        int age = currentYear - Integer.parseInt(dateOfBirth);
+
+        return String.format("So you are %d years old", age);
+    }
+
+    public static String getInputFromScanner(int currentYear) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("What is your Name? ");
+        String name = scanner.nextLine();
+        System.out.println("Hi " + name);
+
+        System.out.println("What year were you born? ");
+
+        boolean validDOB = false;
+        int age = 0;
+
+        do {
+            System.out.println("Enter a year of birth >= " +
+                    (currentYear - 125) + " and <= " + currentYear);
+            age = checkData(currentYear, scanner.nextLine());
+            validDOB = age >= 0;
+        } while (!validDOB);
+
+        return String.format("So you are %d years old", age);
+    }
+
+    public static int checkData(int currentYear, String dateOfBirth) {
+        int dob;
+        try {
+            dob = Integer.parseInt(dateOfBirth);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+        int minimumYear = currentYear - 125;
+
+        if ((dob < minimumYear) || (dob > currentYear)) {
+            return -1;
+        }
+
+        return (currentYear - dob);
+    }
+
+    public static int userInputSum(int numberOfUserInput) {
+        int i = 1;
+        int sum = 0;
+
+        while (i <= numberOfUserInput) {
+            System.out.printf("\nEnter number #%d: ", i);
+            try {
+                sum += getUserInteger();
+                i++;
+            } catch (NoSuchElementException e) {
+                System.out.println("Invalid number");
+            }
+        }
+        return sum;
+    }
+
+    public static int getUserInteger() {
+        int userInput;
+        try {
+            Scanner scanner = new Scanner(System.in);
+            userInput = scanner.nextInt();
+        } catch (NoSuchElementException | IllegalStateException e) {
+            throw new NoSuchElementException("No number were found.");
+        }
+        return userInput;
+    }
+
+    public static void minMaxChallenge() {
+        int min = 0, max = 0, count = 0;
+        while (true) {
+            System.out.println("Enter a number or any character to quit: ");
+            int number;
+            try {
+                number = getUserInteger();
+                count++;
+            } catch (NoSuchElementException e) {
+                if (count == 0) {
+                    System.out.println("No data found.");
+                    break;
+                }
+                System.out.printf("Minimum value: %d\nMaximum value: %d\n", min, max);
+                break;
+            }
+            if (count == 1) {
+                min = number;
+                max = number;
+                continue;
+            }
+            min = Math.min(min, number);
+            max = Math.max(max, number);
+        }
+    }
 }

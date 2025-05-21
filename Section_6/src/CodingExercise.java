@@ -1,3 +1,6 @@
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
 public class CodingExercise {
 
     public static void main(String[] args) {
@@ -218,4 +221,118 @@ public class CodingExercise {
         return result;
     }
 
+    private static final int BIG_WEIGHT = 5;
+
+    public static boolean canPack(int bigCount, int smallCount, int goal) {
+        boolean result = false;
+        if (bigCount >= 0 && smallCount >= 0 && goal >= 0) {
+            int bigCountMaxPortions = goal / BIG_WEIGHT;
+            if (bigCount >= bigCountMaxPortions) {
+                result = (bigCountMaxPortions * BIG_WEIGHT + smallCount) >= goal;
+            } else {
+                result = (bigCount * BIG_WEIGHT + smallCount) >= goal;
+            }
+        }
+
+        return result;
+    }
+
+    public static int getLargestPrime(int number) {
+        if (number < 2) {
+            return -1;
+        }
+
+        int largestPrime = -1;
+
+        while (number % 2 == 0) {
+            largestPrime = 2;
+            number /= 2;
+        }
+
+        for (int i = 3; i * i <= number; i += 2) {
+            while (number % i == 0) {
+                largestPrime = i;
+                number /= i;
+            }
+        }
+
+        if (number > 2) {
+            largestPrime = number;
+        }
+        return largestPrime;
+    }
+
+    public static void printSquareStar(int number) {
+        if (number < 5) {
+            System.out.println("Invalid Value");
+            return;
+        }
+
+        for (int i = 0; i < number; i++) {
+            if (i == 0 || i == number - 1) {
+                System.out.println("*".repeat(number));
+                continue;
+            }
+            StringBuilder result = new StringBuilder();
+            for (int j = 0; j < number; j++) {
+                if (j == 0 || j == number - 1) {
+                    result.append("*");
+                    continue;
+                }
+                if (j == i || j == number - 1 - i) {
+                    result.append("*");
+                    continue;
+                }
+                result.append(" ");
+            }
+            System.out.println(result);
+        }
+    }
+
+    public static void inputThenPrintSumAndAverage() {
+        int sum = 0;
+        int inputCount = 0;
+
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            try {
+                sum += scanner.nextInt();
+                inputCount++;
+            } catch (NoSuchElementException | IllegalStateException e) {
+                if (inputCount == 0) {
+                    System.out.println("SUM = 0 AVG = 0");
+                    break;
+                }
+                long avg = Math.round((double) sum / inputCount);
+                System.out.printf("SUM = %d AVG = %d", sum, avg);
+                break;
+            }
+        }
+    }
+
+    public static int getBucketCount(double width, double height, double areaPerBucket, int extraBuckets) {
+        if (width <= 0 || height <= 0 || areaPerBucket <= 0 || extraBuckets < 0) {
+            return -1;
+        }
+
+        double wallArea = width * height;
+        int bucketNeededCount = getBucketCount(wallArea, areaPerBucket) - extraBuckets;
+        return Math.max(bucketNeededCount, 0);
+    }
+
+    public static int getBucketCount(double width, double height, double areaPerBucket) {
+        if (width <= 0 || height <= 0 || areaPerBucket <= 0) {
+            return -1;
+        }
+
+        return getBucketCount(width, height, areaPerBucket, 0);
+    }
+
+    public static int getBucketCount(double area, double areaPerBucket) {
+        if (area <= 0 || areaPerBucket <= 0) {
+            return -1;
+        }
+
+        return (int) Math.ceil(area / areaPerBucket);
+    }
 }
