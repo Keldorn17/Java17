@@ -1,6 +1,6 @@
-package model;
+package model.customer;
 
-import model.defaults.DefaultCustomerData;
+import model.customer.defaults.DefaultCustomerData;
 
 public class Customer {
 

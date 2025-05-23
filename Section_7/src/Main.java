@@ -1,27 +1,12 @@
 import dto.LPAStudent;
 import dto.Student;
-import model.BankAccount;
+import model.animal.Animal;
+import model.animal.Dog;
+import model.animal.Fish;
 
 public class Main {
 
     public static void main(String[] args) {
-//        Car car = new Car();
-//        car.setMake("Porsche");
-//        car.setModel("Carrera");
-//        car.setColor("Black");
-//        car.setDoors(2);
-//        car.setConvertible(true);
-//        car.describeCar();
-
-        BankAccount bankAccount = new BankAccount();
-
-        bankAccount.depositFunds(1000);
-        try {
-            bankAccount.withdrawFunds(20000);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
-
         for (int i = 1; i <= 5; i++) {
             LPAStudent s = new LPAStudent("S92300" + i,
                     switch (i) {
@@ -53,5 +38,23 @@ public class Main {
         System.out.println(recordStudent.name() + " is taking " +
                 recordStudent.classList());
 
+        Animal animal = new Animal("Generic Animal", "Huge", 400);
+        doAnimalStuff(animal, "slow");
+
+        Dog dog = new Dog("Generic Dog", 25);
+        doAnimalStuff(dog, "fast");
+
+        Dog wolf = new Dog("Wolf", 40);
+        doAnimalStuff(wolf, "slow");
+
+        Fish goldie = new Fish("Goldfish", .25, 2, 3);
+        doAnimalStuff(goldie, "fast");
+    }
+
+    public static void doAnimalStuff(Animal animal, String speed) {
+        animal.makeNoise();
+        animal.move(speed);
+        System.out.println(animal);
+        System.out.println("_ _ _ _");
     }
 }

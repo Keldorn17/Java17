@@ -1,4 +1,4 @@
-package model.defaults;
+package model.customer.defaults;
 
 public class DefaultCustomerData {
     public static final String DEFAULT_NAME = "Example John";
