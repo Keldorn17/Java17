@@ -5,7 +5,7 @@ import com.keldorn.dto.GroceryItem;
 import java.util.*;
 
 public class GroceryList {
-    private List<GroceryItem> groceryItems = new ArrayList<>();
+    private final List<GroceryItem> groceryItems = new ArrayList<>();
 
     private void separator() {
         System.out.println("-".repeat(30));
