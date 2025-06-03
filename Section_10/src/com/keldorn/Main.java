@@ -1,19 +1,16 @@
 package com.keldorn;
 
 import com.keldorn.dto.GroceryItem;
-import com.keldorn.model.places.PlacesActions;
+import com.keldorn.enums.DayOfTheWeek;
+import com.keldorn.enums.Topping;
 
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        arrayLists();
-        moreLists();
-        arrayAndArrayLists();
+        autoboxing();
 
-//        GroceryList groceryList = new GroceryList();
-//        groceryList.run();
-        linkedLists();
+        enums();
     }
 
     private static void separator() {
@@ -132,9 +129,6 @@ public class Main {
 
 //        printItinerary3(placesToVisit);
         testIterator(placesToVisit);
-
-        PlacesActions placesActions = new PlacesActions();
-        placesActions.run();
     }
 
     private static void addMoreElements(LinkedList<String> list) {
@@ -244,5 +238,94 @@ public class Main {
 
         var iterator2 = list.listIterator(3);
         System.out.println(iterator2.previous());
+    }
+
+    private static void autoboxing() {
+        separator();
+//        Integer boxedInt = Integer.valueOf(15); // preferred but unnecessary
+//        Integer deprecatedBoxing = new Integer(15); // deprecated since JDK 9
+//        int unboxedInt = boxedInt.intValue(); // unnecessary
+
+        // Automatic
+        Integer autoBoxed = 15;
+        int autoUnboxed = autoBoxed;
+        System.out.println(autoBoxed.getClass().getName());
+
+        Double resultBoxed = getLiteralDoublePrimitive();
+        double resultUnboxed = getDoubleObject();
+
+        Integer[] wrapperArray = new Integer[5];
+        wrapperArray[0] = 50;
+        System.out.println(Arrays.toString(wrapperArray));
+        System.out.println(wrapperArray[0].getClass().getName());
+
+        Character[] characterArray = {'a', 'b', 'c', 'd'};
+        System.out.println(Arrays.toString(characterArray));
+
+        var ourList = List.of(1, 2, 3, 4, 5);
+        System.out.println(ourList);
+
+    }
+
+    private static ArrayList<Integer> getList(int... varargs) {
+        ArrayList<Integer> aList = new ArrayList<>();
+        for (int i : varargs) {
+            aList.add(i);
+        }
+        return aList;
+    }
+
+    private static int returnAnInt(Integer i) {
+        return i;
+    }
+
+    private static Integer returnAnInteger(int i) {
+        return i;
+    }
+
+    private static Double getDoubleObject() {
+        return Double.valueOf(100.00);
+    }
+
+    private static double getLiteralDoublePrimitive() {
+        return 100.0d;
+    }
+
+    private static void enums() {
+        separator();
+        DayOfTheWeek weekDay = DayOfTheWeek.TUES;
+        System.out.println(weekDay);
+
+        for (int i = 0; i < 9; i++) {
+            weekDay = getRandomDay();
+//            System.out.printf("Name is %s, Ordinal Value = %d%n", weekDay.name(), weekDay.ordinal());
+//
+//            if (weekDay == DayOfTheWeek.FRI) {
+//                System.out.println("Found a Friday!!!");
+//            }
+            switchDayOfWeek(weekDay);
+        }
+
+        separator();
+        for (var topping : Topping.values()) {
+            System.out.println(topping.name() + " : " + topping.getPrice());
+        }
+    }
+
+    public static void switchDayOfWeek(DayOfTheWeek weekDay) {
+        int weekDayInteger = weekDay.ordinal() + 1;
+        switch(weekDay) {
+            case WED -> System.out.println("Wednesday is Day " + weekDayInteger);
+            case SAT -> System.out.println("Saturday is Day " + weekDayInteger);
+            default -> System.out.println(weekDay.name().charAt(0) +
+                    weekDay.name().substring(1).toLowerCase() +
+                    "day is Day " + weekDayInteger);
+        }
+    }
+
+    public static DayOfTheWeek getRandomDay() {
+        int randomInteger = new Random().nextInt(7);
+        var allDays = DayOfTheWeek.values();
+        return allDays[randomInteger];
     }
 }
