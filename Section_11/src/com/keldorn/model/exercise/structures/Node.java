@@ -31,7 +31,7 @@ public class Node extends ListItem {
     int compareTo(ListItem listItem) {
         int result = -1;
         if (listItem != null) {
-            result = ((String) this.getValue()).compareTo((String) listItem.getValue());
+            result = ((String) super.getValue()).compareTo((String) listItem.getValue());
         }
         return result;
     }

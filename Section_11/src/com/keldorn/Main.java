@@ -8,6 +8,12 @@ import com.keldorn.model.animal.*;
 import com.keldorn.model.machine.Jet;
 import com.keldorn.model.machine.Satellite;
 import com.keldorn.model.machine.Truck;
+import com.keldorn.model.map.BaseMap;
+import com.keldorn.model.map.Building;
+import com.keldorn.model.map.Mappable;
+import com.keldorn.model.map.enums.Color;
+import com.keldorn.model.map.enums.LineMarker;
+import com.keldorn.model.map.enums.UsageType;
 import com.keldorn.model.store.ArtObject;
 import com.keldorn.model.store.Furniture;
 import com.keldorn.model.store.OrderItem;
@@ -22,6 +28,7 @@ public class Main {
         animalTest();
         storeTest();
         interfaceTest();
+        mappableTest();
     }
 
     private static void separator() {
@@ -160,5 +167,11 @@ public class Main {
         for (var flier : fliers) {
             flier.land();
         }
+    }
+
+    private static void mappableTest() {
+        separator();
+        Building building = new Building("Test", UsageType.GOVERNMENT, new BaseMap(Color.BLACK, LineMarker.SOLID));
+        Mappable.mapIt(building);
     }
 }
