@@ -9,7 +9,7 @@ public class Park extends Point {
     }
 
     @Override
-    public void render() {
-        System.out.printf("Render %s National Park as %s (%s)%n", name, getExplicitName(), getLocation());
+    public String toString() {
+        return name + " National Park";
     }
 }

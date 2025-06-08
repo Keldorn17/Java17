@@ -10,4 +10,9 @@ public abstract class Point implements Mappable {
     protected Location getLocation() {
         return location;
     }
+
+    @Override
+    public void render() {
+        System.out.printf("Render %s as %s (%s)%n", this, getExplicitName(), getLocation());
+    }
 }

@@ -9,7 +9,7 @@ public class River extends Line {
     }
 
     @Override
-    public void render() {
-        System.out.printf("Render %s River as %s (%s)%n", name, getExplicitName(), getLocations());
+    public String toString() {
+        return name + " River";
     }
 }

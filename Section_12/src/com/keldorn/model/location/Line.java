@@ -14,4 +14,9 @@ public abstract class Line implements Mappable {
     protected List<Location> getLocations() {
         return locations;
     }
+
+    @Override
+    public void render() {
+        System.out.printf("Render %s as %s (%s)%n", this, getExplicitName(), getLocations());
+    }
 }
