@@ -3,6 +3,20 @@ package com.keldorn;
 import java.util.*;
 import java.util.function.*;
 
+class PlainOld {
+    private static int last_id = 1;
+    private final int id;
+
+    public PlainOld() {
+        id = PlainOld.last_id++;
+        System.out.println("Creating a PlainOld Object: id = " + id);
+    }
+
+    public int getId() {
+        return id;
+    }
+}
+
 public class Main {
     record Person(String firstName, String lastName) {
         @Override
@@ -11,10 +25,20 @@ public class Main {
         }
     }
 
+    record Person2(String first) {
+        public String last(String s) {
+            return first + " " + s.substring(0, s.indexOf(" "));
+        }
+    }
+
     public static void main(String[] args) {
         lambdaIntro();
         lambdaExpressions();
         miniLambdaChallenges();
+        lambdaChallenge();
+        methodReferences();
+        methodReferencesChallenge();
+        chainingLambdas();
     }
 
     private static void separator() {
@@ -209,5 +233,204 @@ public class Main {
     // private static String everySecondCharacter(String parameter, Function<String, String function>)
     private static <T, R> R everySecondCharacter(T parameter, Function<T, R> function) {
         return function.apply(parameter);
+    }
+
+    private static void lambdaChallenge() {
+        separator();
+        String[] firstNames = {"Bob", "John", "Alex", "Anna", "Jessica"};
+        List<String> names = new ArrayList<>(List.of(firstNames));
+        System.out.println(Arrays.toString(firstNames));
+
+        Arrays.setAll(firstNames, i -> firstNames[i].toUpperCase());
+        System.out.println(Arrays.toString(firstNames));
+
+        Arrays.setAll(firstNames, i -> firstNames[i] += " " + getRandomChar('A', 'Z') + ".");
+        Arrays.asList(firstNames).forEach(System.out::println);
+
+        names.replaceAll(s -> {
+            StringBuilder reverse = new StringBuilder();
+            reverse.append(s).append(" ");
+            for (int i = 0; i < s.length(); i++) {
+                if (i == 0) {
+                    reverse.append(Character.toUpperCase(s.charAt(s.length() - 1)));
+                    continue;
+                }
+                if (i == s.length() - 1) {
+                    reverse.append(Character.toLowerCase(s.charAt(0)));
+                    continue;
+                }
+                reverse.append(s.charAt(s.length() - 1 - i));
+            }
+            return reverse.toString();
+        });
+        names.forEach(s -> System.out.println("Name with reverse of first name is " + s));
+
+        names.removeIf(s -> {
+            String[] name = s.split(" ");
+            return name[0].equals(name[1]);
+        });
+
+        names.forEach(System.out::println);
+    }
+
+    private static char getRandomChar(char startChar, char endChar) {
+        Random random = new Random();
+        return (char) random.nextInt(startChar, endChar + 1);
+    }
+
+    private static void methodReferences() {
+        separator();
+        List<String> list = new ArrayList<>(List.of(
+                "Anna", "Bob", "Chuck", "Dave"
+        ));
+        list.forEach(System.out::println);
+        calculator(Integer::sum, 10, 25);
+        calculator(Double::sum, 2.5, 7.5);
+
+        Supplier<PlainOld> reference1 = PlainOld::new;
+//        Supplier<PlainOld> reference1 = () -> new PlainOld();
+        PlainOld newPojo = reference1.get();
+
+        System.out.println("Getting array");
+        PlainOld[] pojo1 = seedArray(PlainOld::new, 10);
+
+        calculator(String::concat, "Hello ", "World");
+
+        UnaryOperator<String> u1 = String::toUpperCase;
+        System.out.println(u1.apply("Hello"));
+
+        String result = "Hello".transform(u1);
+        System.out.println("Result = " + result);
+
+        result = result.transform(String::toLowerCase);
+        System.out.println("Result = " + result);
+
+        Function<String, Boolean> f0 = String::isEmpty;
+        boolean resultBoolean = result.transform(f0);
+        System.out.println("Result = " + resultBoolean);
+    }
+
+    private static PlainOld[] seedArray(Supplier<PlainOld> reference, int count) {
+        PlainOld[] array = new PlainOld[count];
+        Arrays.setAll(array, i -> reference.get());
+        return array;
+    }
+
+    private static void methodReferencesChallenge() {
+        separator();
+        String[] names = {"Bob", "John", "Alex", "Anna", "Jessica"};
+
+        Person2 person = new Person2("Tim");
+
+        List<UnaryOperator<String>> list = new ArrayList<>(List.of(
+                String::toUpperCase,
+                s -> s + (" " + getRandomChar('A', 'Z') + "."),
+                s -> s + (" " + reverse(s, 0, s.indexOf(" "))),
+                Main::reverse,
+                String::new,
+//                s -> new String("Howdy " + s),
+                String::valueOf,
+                person::last,
+                (new Person2("Mary"))::last
+        ));
+
+        applyChanges(names, list);
+    }
+
+    private static void applyChanges(String[] names, List<UnaryOperator<String>> stringFunctions) {
+        List<String> backedByArray = Arrays.asList(names);
+        for (var function : stringFunctions) {
+            backedByArray.replaceAll(s -> s.transform(function));
+            System.out.println(Arrays.toString(names));
+        }
+    }
+
+    private static String reverse(String s) {
+        return reverse(s, 0, s.length());
+    }
+
+    private static String reverse(String s, int start, int end) {
+        return new StringBuilder(s.substring(start, end)).reverse().toString();
+    }
+
+    private static void chainingLambdas() {
+        separator();
+        String name = "Tim";
+        Function<String, String> uCase = String::toUpperCase;
+        System.out.println(uCase.apply(name));
+
+        Function<String, String> lastName = s -> s.concat(" Buchalka");
+        Function<String, String> uCaseLastName = uCase.andThen(lastName);
+        System.out.println(uCaseLastName.apply(name));
+
+        uCaseLastName = uCase.compose(lastName);
+        System.out.println(uCaseLastName.apply(name));
+
+        Function<String, String[]> f0 = uCase
+                .andThen(s -> s.concat(" Buchalka"))
+                .andThen(s -> s.split(" "));
+        System.out.println(Arrays.toString(f0.apply(name)));
+
+        Function<String, String> f1 = uCase
+                .andThen(s -> s.concat(" Buchalka"))
+                .andThen(s -> s.split(" "))
+                .andThen(s -> s[1].toUpperCase() + ", " + s[0]);
+        System.out.println(f1.apply(name));
+
+        Function<String, Integer> f2 = uCase
+                .andThen(s -> s.concat(" Buchalka"))
+                .andThen(s -> s.split(" "))
+                .andThen(s -> String.join(", ", s))
+                .andThen(String::length);
+
+        System.out.println(f2.apply(name));
+
+        String[] names = {"Ann", "Bob", "Carol"};
+        Consumer<String> s0 = s -> System.out.print(s.charAt(0));
+        Consumer<String> s1 = System.out::println;
+        Arrays.asList(names).forEach(s0
+                .andThen(s -> System.out.print(" - "))
+                .andThen(s1));
+
+        Predicate<String> p1 = s -> s.equals("TIM");
+        Predicate<String> p2 = s -> s.equalsIgnoreCase("Tim");
+        Predicate<String> p3 = s -> s.startsWith("T");
+        Predicate<String> p4 = s -> s.endsWith("e");
+
+        Predicate<String> combined1 = p1.or(p2);
+        System.out.println("combined1 = " + combined1.test(name));
+
+        Predicate<String> combined2 = p3.and(p4);
+        System.out.println("combined2 = " + combined2.test(name));
+
+        Predicate<String> combined3 = p3.and(p4).negate();
+        System.out.println("combined3 = " + combined3.test(name));
+
+        record Person(String firstName, String lastName) {}
+
+        List<Person> list = new ArrayList<>(Arrays.asList(
+                new Person("Peter", "Pan"),
+                new Person("Peter", "PumpkinEater"),
+                new Person("Minnie", "Mouse"),
+                new Person("Mickey", "Mouse")
+        ));
+
+        list.sort((o1, o2) -> o1.lastName.compareTo(o2.lastName));
+        list.forEach(System.out::println);
+
+        separator();
+        list.sort(Comparator.comparing(Person::lastName));
+        list.forEach(System.out::println);
+
+        separator();
+        list.sort(Comparator.comparing(Person::lastName)
+                .thenComparing(Person::firstName));
+        list.forEach(System.out::println);
+
+        separator();
+        list.sort(Comparator.comparing(Person::lastName)
+                .thenComparing(Person::firstName)
+                .reversed());
+        list.forEach(System.out::println);
     }
 }
