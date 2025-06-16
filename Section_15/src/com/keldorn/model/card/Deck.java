@@ -7,7 +7,6 @@ import java.util.List;
 public class Deck {
     private static final String DESCRIPTION_DEFAULT = "Current Deck";
     private static final int ROWS_DEFAULT = 4;
-    private static final int CARDS_PER_ROW = 13;
 
     private final List<Card> clubs = new CardType(Suit.CLUB).getCards();
     private final List<Card> diamonds = new CardType(Suit.DIAMOND).getCards();
@@ -48,8 +47,9 @@ public class Deck {
             System.out.println("-".repeat(30));
             System.out.println(description.trim());
         }
+        int cardPerRow = (int) Math.ceil((double) cards.size() / rows);
         for (int i = 0; i < rows; i++) {
-            for (int j = (i * CARDS_PER_ROW); j < CARDS_PER_ROW + (i * CARDS_PER_ROW); j++) {
+            for (int j = (i * cardPerRow); j < cardPerRow + (i * cardPerRow); j++) {
                 if (j >= cards.size()) {
                     System.out.println();
                     return;

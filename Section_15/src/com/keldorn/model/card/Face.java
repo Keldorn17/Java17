@@ -43,4 +43,12 @@ public enum Face {
             };
         }
     }
+
+    public int getValue() {
+        return switch (this) {
+            case JACK, QUEEN, KING -> 10;
+            case ACE -> 11;
+            default -> getRank();
+        };
+    }
 }

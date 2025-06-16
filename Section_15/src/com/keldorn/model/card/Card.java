@@ -1,5 +1,6 @@
 package com.keldorn.model.card;
 
+import java.util.Comparator;
 import java.util.Set;
 
 public record Card(Suit suit, Face face) {
@@ -11,7 +12,7 @@ public record Card(Suit suit, Face face) {
 
     @Override
     public String toString() {
-        return "%s%s(%d)".formatted(face.getFaceSymbol(), suit.getImage(), face.getRank());
+        return "%s%s(%d)".formatted(face.getFaceSymbol(), suit.getImage(), face.getValue());
     }
 
     public static Card getNumericCard(Suit suit, int numericCardNumber) {
@@ -30,5 +31,9 @@ public record Card(Suit suit, Face face) {
 
     private static boolean isValidCard(String faceCard) {
         return faceCard != null && VALID_FACE_CARDS.contains(faceCard.toUpperCase());
+    }
+
+    public static Comparator<Card> sortRankReversedSuit() {
+        return Comparator.comparing(Card::rank).reversed().thenComparing(Card::suit);
     }
 }

@@ -1,8 +1,10 @@
 package com.keldorn;
 
+import com.keldorn.model.card.Blackjack;
 import com.keldorn.model.card.Card;
 import com.keldorn.model.card.Deck;
 import com.keldorn.model.card.Suit;
+import com.keldorn.model.card.poker.PokerGame;
 
 import java.util.*;
 
@@ -10,6 +12,8 @@ public class Main {
     public static void main(String[] args) {
         collectionsOverview();
         cardTest();
+//        blackjackTest();
+        pokerGameTest();
     }
 
     private static void separator() {
@@ -42,7 +46,7 @@ public class Main {
         Card[] cardArray = new Card[13];
         Card aceOfHearts = Card.getFaceCard(Suit.HEART, "A");
         Arrays.fill(cardArray, aceOfHearts);
-        Deck.printDeck(Arrays.asList(cardArray), "Aces of Hearts");
+        Deck.printDeck(Arrays.asList(cardArray), "Aces of Hearts", 1);
 
         List<Card> cards = new ArrayList<>(52);
         Collections.fill(cards, aceOfHearts);
@@ -50,21 +54,21 @@ public class Main {
         System.out.println("cards.size() = " + cards.size());
 
         List<Card> acesOfHearts = Collections.nCopies(13, aceOfHearts);
-        Deck.printDeck(acesOfHearts, "Aces of Hearts");
+        Deck.printDeck(acesOfHearts, "Aces of Hearts", 1);
 
         Card kingOfClubs = Card.getFaceCard(Suit.CLUB, "K");
         List<Card> kingsOfClubs = Collections.nCopies(13, kingOfClubs);
-        Deck.printDeck(kingsOfClubs, "Kings of Clubs");
+        Deck.printDeck(kingsOfClubs, "Kings of Clubs", 1);
 
         Collections.addAll(cards, cardArray);
         Collections.addAll(cards, cardArray);
-        Deck.printDeck(cards, "Card Collection with Aces added");
+        Deck.printDeck(cards, "Card Collection with Aces added", 2);
 
         Collections.copy(cards, kingsOfClubs);
-        Deck.printDeck(cards, "Card Collection with Kings copied");
+        Deck.printDeck(cards, "Card Collection with Kings copied", 2);
 
         cards = List.copyOf(kingsOfClubs);
-        Deck.printDeck(cards, "List Copy of Kings");
+        Deck.printDeck(cards, "List Copy of Kings", 1);
 
         Deck.printDeck(deck.getShuffledDeck(), "Shuffled Deck");
 
@@ -79,10 +83,10 @@ public class Main {
 
         Collections.reverse(fullDeck);
         List<Card> kings = new ArrayList<>(fullDeck.subList(4, 8));
-        Deck.printDeck(kings, "Kings in deck");
+        Deck.printDeck(kings, "Kings in deck", 1);
 
         List<Card> tens = new ArrayList<>(fullDeck.subList(16, 20));
-        Deck.printDeck(tens, "Tens in deck");
+        Deck.printDeck(tens, "Tens in deck", 1);
 
 //        Collections.shuffle(fullDeck);
         int subListIndex = Collections.indexOfSubList(fullDeck, tens);
@@ -105,10 +109,10 @@ public class Main {
 
         Card tenOfClubs = Card.getNumericCard(Suit.CLUB, 10);
         Collections.replaceAll(fullDeck, tenOfClubs, tenOfHearts);
-        Deck.printDeck(fullDeck.subList(32, 36), "Tens row");
+        Deck.printDeck(fullDeck.subList(32, 36), "Tens row", 1);
 
         Collections.replaceAll(fullDeck, tenOfHearts, tenOfClubs);
-        Deck.printDeck(fullDeck.subList(32, 36), "Tens row");
+        Deck.printDeck(fullDeck.subList(32, 36), "Tens row", 1);
 
         if (Collections.replaceAll(fullDeck, tenOfHearts, tenOfClubs)) {
             System.out.println("Tens of hearts replaced with tens of clubs");
@@ -145,5 +149,16 @@ public class Main {
         copied = new ArrayList<>(fullDeck.subList(0, 13));
         Collections.reverse(copied);
         System.out.println("Using reverse: " + copied);
+    }
+
+    private static void blackjackTest() {
+        separator();
+        Blackjack blackJack = new Blackjack();
+        blackJack.run();
+    }
+
+    private static void pokerGameTest() {
+        PokerGame fiveCardDraw = new PokerGame(4, 5);
+        fiveCardDraw.startPlay();
     }
 }
