@@ -5,6 +5,9 @@ import com.keldorn.model.card.Card;
 import com.keldorn.model.card.Deck;
 import com.keldorn.model.card.Suit;
 import com.keldorn.model.card.poker.PokerGame;
+import com.keldorn.model.contact.Contact;
+import com.keldorn.model.contact.ContactData;
+import com.keldorn.model.playing.PlayingCard;
 
 import java.util.*;
 
@@ -12,8 +15,8 @@ public class Main {
     public static void main(String[] args) {
         collectionsOverview();
         cardTest();
-//        blackjackTest();
-        pokerGameTest();
+        hashing();
+        setsAndMaps();
     }
 
     private static void separator() {
@@ -160,5 +163,108 @@ public class Main {
     private static void pokerGameTest() {
         PokerGame fiveCardDraw = new PokerGame(4, 5);
         fiveCardDraw.startPlay();
+    }
+
+    private static void hashing() {
+        separator();
+        String aText = "Hello";
+        String bText = "Hello";
+        String cText = String.join("l", "He", "lo");
+        String dText = "He".concat("llo");
+        String eText = "hello";
+        List<String> hellos =
+                Arrays.asList(aText, bText, cText, dText, eText);
+
+        hellos.forEach(s -> System.out.println(s + ": " + s.hashCode()));
+
+        Set<String> mySet = new HashSet<>(hellos);
+        separator();
+        mySet.forEach(s -> System.out.println(s + ": " + s.hashCode()));
+        System.out.println("mySet = " + mySet);
+        System.out.println("No of elements = " + mySet.size());
+
+        for (var setValue : mySet) {
+            System.out.print(setValue + ": ");
+            for (int i = 0; i < hellos.size(); i++) {
+                if (Objects.equals(setValue, hellos.get(i))) {
+                    System.out.print(i + ", ");
+                }
+            }
+            System.out.println();
+        }
+
+        separator();
+        PlayingCard aceHearts = new PlayingCard("Hearts", "Ace");
+        PlayingCard kingClubs = new PlayingCard("Clubs", "King");
+        PlayingCard queenSpades = new PlayingCard("Spades", "Queen");
+
+        List<PlayingCard> cards =
+                Arrays.asList(aceHearts, kingClubs, queenSpades);
+        cards.forEach(s -> System.out.println(s + ": " + s.hashCode()));
+
+        Set<PlayingCard> deck = new HashSet<>();
+        for (var c : cards) {
+            if (!deck.add(c)) {
+                System.out.println("Found a duplicate for " + c);
+            }
+        }
+        System.out.println(deck);
+
+    }
+
+    private static void setsAndMaps() {
+        separator();
+        List<Contact> emails = ContactData.getData("email");
+        List<Contact> phone = ContactData.getData("phone");
+        printData("Phone List", phone);
+        printData("Email List", emails);
+
+        Set<Contact> emailContacts = new HashSet<>(emails);
+        Set<Contact> phoneContacts = new HashSet<>(phone);
+        printData("Phone Contacts", phoneContacts);
+        printData("Email Contacts", emailContacts);
+
+        int index = emails.indexOf(new Contact("Robin Hood"));
+        Contact robinHood = emails.get(index);
+        robinHood.addEmail("Sherwood Forest");
+        robinHood.addEmail("Sherwood Forest");
+        robinHood.replaceEmailIfExists("RHood@sherwoodforest.com", "RHood@sherwoodforest.org");
+        System.out.println(robinHood);
+
+        Set<Contact> unionAB = new HashSet<>();
+        unionAB.addAll(emailContacts);
+        unionAB.addAll(phoneContacts);
+        printData("(A ∪ B) Union of emails (A) with phones (B)", unionAB);
+
+        Set<Contact> intersectAB = new HashSet<>(emailContacts);
+        intersectAB.retainAll(phoneContacts);
+        printData("(A ∩ B) Intersect emails (A) and phones (B)", intersectAB);
+
+        Set<Contact> intersectBA = new HashSet<>(phoneContacts);
+        intersectBA.retainAll(emailContacts);
+        printData("(B ∩ A) Intersect phones (B) and emails (A)", intersectBA);
+
+        Set<Contact> AMinusB = new HashSet<>(emailContacts);
+        AMinusB.removeAll(phoneContacts);
+        printData("(A - B) emails (A) - phones (B)", AMinusB);
+
+        Set<Contact> BMinusA = new HashSet<>(phoneContacts);
+        BMinusA.removeAll(emailContacts);
+        printData("(B - A) phones (B) - emails (A)", BMinusA);
+
+        Set<Contact> symmetricDiff = new HashSet<>(AMinusB);
+        symmetricDiff.addAll(BMinusA);
+        printData("Symmetric Difference: phones and emails", symmetricDiff);
+
+        Set<Contact> symmetricDiff2 = new HashSet<>(unionAB);
+        symmetricDiff2.removeAll(intersectAB);
+        printData("Symmetric Difference: phones and emails", symmetricDiff2);
+    }
+
+    private static void printData(String header, Collection<Contact> contacts) {
+        separator();
+        System.out.println(header);
+        separator();
+        contacts.forEach(System.out::println);
     }
 }
