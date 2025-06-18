@@ -8,6 +8,8 @@ import com.keldorn.model.card.poker.PokerGame;
 import com.keldorn.model.contact.Contact;
 import com.keldorn.model.contact.ContactData;
 import com.keldorn.model.playing.PlayingCard;
+import com.keldorn.model.task.Task;
+import com.keldorn.model.task.TaskData;
 
 import java.util.*;
 
@@ -17,6 +19,7 @@ public class Main {
         cardTest();
         hashing();
         setsAndMaps();
+        setOperations();
     }
 
     private static void separator() {
@@ -266,5 +269,82 @@ public class Main {
         System.out.println(header);
         separator();
         contacts.forEach(System.out::println);
+    }
+
+    private static void setOperations() {
+        separator();
+        Set<Task> tasks = TaskData.getTask("all");
+        sortAndPrint("All Tasks", tasks);
+
+        Comparator<Task> sortByPriority = Comparator.comparing(Task::getPriority).reversed();
+        Set<Task> annsTasks = TaskData.getTask("Ann");
+        sortAndPrint("Ann's Tasks", annsTasks, sortByPriority);
+
+        Set<Task> bobsTasks = TaskData.getTask("Bob");
+        Set<Task> carolsTasks = TaskData.getTask("Carol");
+        List<Set<Task>> sets = List.of(annsTasks, bobsTasks, carolsTasks);
+
+        Set<Task> assignedTasks = getUnion(sets);
+        sortAndPrint("Assigned Tasks", assignedTasks);
+
+        Set<Task> everyTask = getUnion(List.of(tasks, assignedTasks));
+        sortAndPrint("The True All Tasks", everyTask);
+
+        Set<Task> missingTasks = getDifference(everyTask, tasks);
+        sortAndPrint("Missing Tasks", missingTasks);
+
+        Set<Task> unassignedTasks = getDifference(tasks, assignedTasks);
+        sortAndPrint("Unassigned Tasks", unassignedTasks, sortByPriority);
+
+        Set<Task> overlap = getUnion(List.of(
+                getIntersect(annsTasks, bobsTasks),
+                getIntersect(carolsTasks, bobsTasks),
+                getIntersect(annsTasks, carolsTasks)
+        ));
+        sortAndPrint("Assigned to Multiples", overlap, sortByPriority);
+
+        List<Task> overlapping = new ArrayList<>();
+        for (Set<Task> set : sets) {
+            Set<Task> dupes = getIntersect(set, overlap);
+            overlapping.addAll(dupes);
+        }
+
+        Comparator<Task> priorityNatural = sortByPriority.thenComparing(Comparator.naturalOrder());
+        sortAndPrint("Overlapping", overlapping, priorityNatural);
+    }
+
+    private static void sortAndPrint(String header, Collection<Task> collection) {
+        sortAndPrint(header, collection, null);
+    }
+
+    private static void sortAndPrint(String header, Collection<Task> collection, Comparator<Task> sorter) {
+        String lineSeparator = "-".repeat(90);
+        System.out.println(lineSeparator);
+        System.out.println(header);
+        System.out.println(lineSeparator);
+
+        List<Task> list = new ArrayList<>(collection);
+        list.sort(sorter);
+        list.forEach(System.out::println);
+    }
+
+    private static Set<Task> getUnion(List<Set<Task>> sets) {
+        Set<Task> union = new HashSet<>();
+        for (var set : sets) {
+            union.addAll(set);
+        }
+        return union;
+    }
+
+    private static Set<Task> getIntersect(Set<Task> set1, Set<Task> set2) {
+        Set<Task> intersect = new HashSet<>(set1);
+        intersect.retainAll(set2);
+        return intersect;
+    }
+
+    private static Set<Task> getDifference(Set<Task> set1, Set<Task> set2) {
+        Set<Task> difference = new HashSet<>(set1);
+        difference.removeAll(set2);
+        return difference;
     }
 }
