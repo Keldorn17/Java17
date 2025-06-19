@@ -10,6 +10,7 @@ import com.keldorn.model.contact.ContactData;
 import com.keldorn.model.playing.PlayingCard;
 import com.keldorn.model.task.Task;
 import com.keldorn.model.task.TaskData;
+import com.keldorn.model.theatre.Theatre;
 
 import java.util.*;
 
@@ -20,6 +21,8 @@ public class Main {
         hashing();
         setsAndMaps();
         setOperations();
+        treeSet();
+        theaterTest();
     }
 
     private static void separator() {
@@ -346,5 +349,97 @@ public class Main {
         Set<Task> difference = new HashSet<>(set1);
         difference.removeAll(set2);
         return difference;
+    }
+
+    private static void treeSet() {
+        separator();
+        List<Contact> phones = ContactData.getData("phone");
+        List<Contact> emails = ContactData.getData("email");
+
+//        NavigableSet<Contact> sorted = new TreeSet(phones);
+        Comparator<Contact> mySort = Comparator.comparing(Contact::getName);
+        NavigableSet<Contact> sorted = new TreeSet<>(mySort);
+        sorted.addAll(phones);
+        sorted.forEach(System.out::println);
+
+        NavigableSet<String> justNames = new TreeSet<>();
+        phones.forEach(c -> justNames.add(c.getName()));
+        System.out.println(justNames);
+
+        NavigableSet<Contact> fullSet = new TreeSet<>(sorted);
+        fullSet.addAll(emails);
+        fullSet.forEach(System.out::println);
+
+        List<Contact> fullList = new ArrayList<>(phones);
+        fullList.addAll(emails);
+        fullList.sort(sorted.comparator());
+        separator();
+        fullList.forEach(System.out::println);
+
+        Contact min = Collections.min(fullSet, fullSet.comparator());
+        Contact max = Collections.max(fullSet, fullSet.comparator());
+
+        Contact first = fullSet.first();
+        Contact last = fullSet.last();
+
+        separator();
+        System.out.printf("min = %s, first = %s %n", min.getName(), first.getName());
+        System.out.printf("max = %s, last = %s %n", max.getName(), last.getName());
+        separator();
+
+        NavigableSet<Contact> copiedSet = new TreeSet<>(fullSet);
+        System.out.println("First element = " + copiedSet.pollFirst());
+        System.out.println("Last element = " + copiedSet.pollLast());
+        copiedSet.forEach(System.out::println);
+        separator();
+
+        Contact daffy = new Contact("Daffy Duck");
+        Contact daisy = new Contact("Daisy Duct");
+        Contact snoopy = new Contact("Snoopy");
+        Contact archie = new Contact("Archie");
+
+        for (var c : List.of(daffy, daisy, last, snoopy)) {
+            System.out.printf("ceiling(%s)=%s%n", c.getName(), fullSet.ceiling(c));
+            System.out.printf("higher(%s)=%s%n", c.getName(), fullSet.higher(c));
+        }
+        separator();
+
+        for (var c : List.of(daffy, daisy, first, archie)) {
+            System.out.printf("floor(%s)=%s%n", c.getName(), fullSet.floor(c));
+            System.out.printf("lower(%s)=%s%n", c.getName(), fullSet.lower(c));
+        }
+        separator();
+
+        NavigableSet<Contact> descendingSet = fullSet.descendingSet();
+        descendingSet.forEach(System.out::println);
+        separator();
+
+        Contact lastContact = descendingSet.pollLast();
+        System.out.println("Removed " + lastContact);
+        descendingSet.forEach(System.out::println);
+        separator();
+        fullSet.forEach(System.out::println);
+        separator();
+
+        Contact marion = new Contact("Maid Marion");
+        var headSet = fullSet.headSet(marion, true);
+        headSet.forEach(System.out::println);
+        separator();
+
+        var tailSet = fullSet.tailSet(marion, false);
+        tailSet.forEach(System.out::println);
+        separator();
+
+        Contact linus = new Contact("Linus Van Pelt");
+        var subset = fullSet.subSet(linus, false, marion, true);
+        subset.forEach(System.out::println);
+    }
+
+    private static void theaterTest() {
+        separator();
+        Theatre theatre = new Theatre("test", 10);
+        theatre.printSeatMap();
+        theatre.reserveSeat("A002", "A3", "A4");
+        theatre.printSeatMap();
     }
 }
