@@ -23,6 +23,7 @@ public class Main {
         setOperations();
         treeSet();
         theaterTest();
+        mapExamples();
     }
 
     private static void separator() {
@@ -441,5 +442,67 @@ public class Main {
         theatre.printSeatMap();
         theatre.reserveSeat("A002", "A3", "A4");
         theatre.printSeatMap();
+    }
+
+    private static void mapExamples() {
+        separator();
+
+        List<Contact> phones = ContactData.getData("phone");
+        List<Contact> emails = ContactData.getData("email");
+
+        List<Contact> fullList = new ArrayList<>(phones);
+        fullList.addAll(emails);
+        fullList.forEach(System.out::println);
+        separator();
+
+        Map<String, Contact> contacts = new HashMap<>();
+        for (var contact : fullList) {
+            contacts.put(contact.getName(), contact);
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        System.out.println(contacts.get("Charlie Brown"));
+
+        System.out.println(contacts.get("Chuck Brown"));
+
+        Contact defaultContact = new Contact("Chuck Brown");
+        System.out.println(contacts.getOrDefault("Chuck Brown", defaultContact));
+
+        separator();
+        contacts.clear();
+        for (Contact contact : fullList) {
+            Contact duplicate = contacts.put(contact.getName(), contact);
+            if (duplicate != null) {
+                contacts.put(contact.getName(), contact.mergeContactData(duplicate));
+            }
+        }
+
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        contacts.clear();
+
+        for (var contact : fullList) {
+            contacts.putIfAbsent(contact.getName(), contact);
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        contacts.clear();
+
+        for (var contact : fullList) {
+            Contact duplicate = contacts.putIfAbsent(contact.getName(), contact);
+            if (duplicate != null) {
+                contacts.put(contact.getName(), contact.mergeContactData(duplicate));
+            }
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        contacts.clear();
+        fullList.forEach(contact -> contacts.merge(contact.getName(), contact,
+                Contact::mergeContactData));
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
     }
 }
