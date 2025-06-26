@@ -1,4 +1,4 @@
-package com.keldorn.model.solution;
+package com.keldorn.model.theatre.solution;
 
 public class BookingAgent {
 

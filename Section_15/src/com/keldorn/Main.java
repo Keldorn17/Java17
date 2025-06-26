@@ -16,14 +16,15 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        collectionsOverview();
-        cardTest();
-        hashing();
-        setsAndMaps();
-        setOperations();
-        treeSet();
-        theaterTest();
-        mapExamples();
+//        collectionsOverview();
+//        cardTest();
+//        hashing();
+//        setsAndMaps();
+//        setOperations();
+//        treeSet();
+//        theaterTest();
+//        mapExamples();
+        mapViews();
     }
 
     private static void separator() {
@@ -504,5 +505,127 @@ public class Main {
         fullList.forEach(contact -> contacts.merge(contact.getName(), contact,
                 Contact::mergeContactData));
         contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        for (String contactName : new String[] {"Daisy Duck", "Daffy Duck", "Scrooge McDuck"}) {
+            contacts.compute(contactName, (k, v) -> new Contact(k));
+//            contacts.computeIfAbsent(contactName, Contact::new);
+            contacts.computeIfPresent(contactName, (k, v) -> {
+                v.addEmail("Fun Place");
+                return v;
+            });
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        contacts.replaceAll((k, v) -> {
+            String newEmail = k.replaceAll(" ", "") + "@funplace.com";
+            v.replaceEmailIfExists("DDuck@funplace.com", newEmail);
+            return v;
+        });
+
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        Contact daisy = new Contact("Daisy Jane Duck", "daisyj@duck.com");
+
+        Contact replacedContact = contacts.replace("Daisy Duck", daisy);
+        System.out.println("Daisy = " + daisy);
+        System.out.println("Replaced contact = " + replacedContact);
+
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        Contact updatedDaisy = replacedContact.mergeContactData(daisy);
+        System.out.println("updatedDaisy = " + updatedDaisy);
+        boolean success = contacts.replace("Daisy Duck", daisy, updatedDaisy);
+        if (success) {
+            System.out.println("Successfully replaced element");
+        } else {
+            System.out.printf("Did not match on bot key: %s and value %s %n"
+                    .formatted("Daisy Duck", replacedContact));
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+        separator();
+        success = contacts.remove("Daisy Duck", daisy);
+        if (success) {
+            System.out.println("Successfully removed element");
+        } else {
+            System.out.printf("Did not match on bot key: %s and value %s %n"
+                    .formatted("Daisy Duck", replacedContact));
+        }
+        contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
+
+    }
+
+    private static void mapViews() {
+        separator();
+        Map<String, Contact> contacts = new HashMap<>();
+        ContactData.getData("phone").forEach(c -> contacts.put(c.getName(), c));
+        ContactData.getData("email").forEach(c -> contacts.put(c.getName(), c));
+
+        Set<String> keysView = contacts.keySet();
+        System.out.println(keysView);
+
+        Set<String> copyOfKeys = new TreeSet<>(contacts.keySet());
+        System.out.println(copyOfKeys);
+
+        if (contacts.containsKey("Linus Van Pelt")) {
+            System.out.println("Linus and I go way back, so of course I have info");
+        }
+
+        keysView.remove("Daffy Duck");
+        System.out.println(keysView);
+        contacts.forEach((k, v) -> System.out.println(v));
+
+        copyOfKeys.remove("Linus Van Pelt");
+        System.out.println(copyOfKeys);
+        contacts.forEach((k, v) -> System.out.println(v));
+
+        keysView.retainAll(List.of("Linus Van Pelt", "Charlie Brown", "Robin Hood", "Mickey Mouse"));
+        System.out.println(keysView);
+        contacts.forEach((k, v) -> System.out.println(v));
+
+        keysView.clear();
+        System.out.println(contacts);
+
+        ContactData.getData("email").forEach(c -> contacts.put(c.getName(), c));
+        ContactData.getData("phone").forEach(c -> contacts.put(c.getName(), c));
+        System.out.println(keysView);
+
+        var values = contacts.values();
+        values.forEach(System.out::println);
+
+        values.retainAll(ContactData.getData("email"));
+        System.out.println(keysView);
+        contacts.forEach((k, v) -> System.out.println(v));
+
+        separator();
+        List<Contact> list = new ArrayList<>(values);
+        list.sort(Comparator.comparing(Contact::getNameLastFirst));
+        list.forEach(c -> System.out.println(c.getNameLastFirst() + " : " + c));
+
+        separator();
+        Contact first = list.get(0);
+        contacts.put(first.getNameLastFirst(), first);
+        values.forEach(System.out::println);
+        keysView.forEach(System.out::println);
+
+        HashSet<Contact> set = new HashSet<>(values);
+        set.forEach(System.out::println);
+        if (set.size() < contacts.keySet().size()) {
+            System.out.println("Duplicate Values are in my Map");
+        }
+
+        var nodeSet = contacts.entrySet();
+        for (var node : nodeSet) {
+            System.out.println(nodeSet.getClass().getName());
+            if (!node.getKey().equals(node.getValue().getName())) {
+                System.out.println(node.getClass().getName());
+                System.out.println("Key doesn't match name: " + node.getKey() + ": "
+                        + node.getValue());
+            }
+        }
     }
 }

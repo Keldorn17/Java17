@@ -1,4 +1,4 @@
-package com.keldorn.model.solution;
+package com.keldorn.model.theatre.solution;
 
 import java.util.NavigableSet;
 import java.util.Set;
