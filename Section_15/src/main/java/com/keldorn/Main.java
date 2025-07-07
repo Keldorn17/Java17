@@ -7,15 +7,22 @@ import main.java.com.keldorn.model.card.Suit;
 import main.java.com.keldorn.model.card.poker.PokerGame;
 import main.java.com.keldorn.model.contact.Contact;
 import main.java.com.keldorn.model.contact.ContactData;
+import main.java.com.keldorn.model.course.Course;
+import main.java.com.keldorn.model.course.Purchase;
+import main.java.com.keldorn.model.course.Student;
 import main.java.com.keldorn.model.game.Player;
 import main.java.com.keldorn.model.playing.PlayingCard;
 import main.java.com.keldorn.model.task.Task;
 import main.java.com.keldorn.model.task.TaskData;
 import main.java.com.keldorn.model.theatre.Theatre;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class Main {
+    private static final Map<String, Purchase> purchases = new LinkedHashMap<>();
+    private static final NavigableMap<String, Student> students = new TreeMap<>();
+
     public static void main(String[] args) {
 //        collectionsOverview();
 //        cardTest();
@@ -25,8 +32,9 @@ public class Main {
 //        treeSet();
 //        theaterTest();
 //        mapExamples();
-        mapViews();
-        gameTest();
+//        mapViews();
+//        gameTest();
+        sortedMap();
     }
 
     private static void separator() {
@@ -509,7 +517,7 @@ public class Main {
         contacts.forEach((k, v) -> System.out.println("Key = " + k + ", Value = " + v));
 
         separator();
-        for (String contactName : new String[] {"Daisy Duck", "Daffy Duck", "Scrooge McDuck"}) {
+        for (String contactName : new String[]{"Daisy Duck", "Daffy Duck", "Scrooge McDuck"}) {
             contacts.compute(contactName, (k, v) -> new Contact(k));
 //            contacts.computeIfAbsent(contactName, Contact::new);
             contacts.computeIfPresent(contactName, (k, v) -> {
@@ -635,5 +643,104 @@ public class Main {
         separator();
         Player player = new Player();
         player.play();
+    }
+
+    private static void sortedMap() {
+        separator();
+        Course jmc = new Course("jmc101", "Java Master Class", "Java");
+        Course python = new Course("pyt101", "Python Master Class", "Python");
+
+        addPurchase("Mary Martin", jmc, 129.99);
+        addPurchase("Andy Martin", jmc, 139.99);
+        addPurchase("Mary Martin", python, 149.99);
+        addPurchase("Joe Jones", jmc, 149.99);
+        addPurchase("Bill Brown", python, 119.99);
+
+        purchases.forEach((key, value) -> System.out.println(key + ": " + value));
+        separator();
+        students.forEach((key, value) -> System.out.println(key + ": " + value));
+
+        NavigableMap<LocalDate, List<Purchase>> datedPurchases = new TreeMap<>();
+        for (Purchase p : purchases.values()) {
+            datedPurchases.compute(p.purchaseData(),
+                    (pdate, plist) -> {
+                        List<Purchase> list =
+                                (plist == null) ? new ArrayList<>() : plist;
+                        list.add(p);
+                        return list;
+                    });
+        }
+        separator();
+        datedPurchases.forEach((key, value) -> System.out.println(key + ": " + value));
+
+        int currentYear = LocalDate.now().getYear();
+
+        LocalDate firstDay = LocalDate.ofYearDay(currentYear, 1);
+        LocalDate week1 = firstDay.plusDays(7);
+        Map<LocalDate, List<Purchase>> week1Purchases = datedPurchases.headMap(week1);
+        Map<LocalDate, List<Purchase>> week2Purchases = datedPurchases.tailMap(week1);
+
+        displayStats(1, week1Purchases);
+        displayStats(2, week2Purchases);
+
+        separator();
+
+        LocalDate lastDate = datedPurchases.lastKey();
+        var previousEntry = datedPurchases.lastEntry();
+
+        while (previousEntry != null) {
+            List<Purchase> lastDaysDate = previousEntry.getValue();
+            System.out.println(lastDate + " purchases : " + lastDaysDate.size());
+
+            LocalDate prevDate = datedPurchases.lowerKey(lastDate);
+            previousEntry = datedPurchases.lowerEntry(lastDate);
+            lastDate = prevDate;
+        }
+
+        separator();
+        var reversed = datedPurchases.descendingMap();
+        LocalDate firstDate = reversed.firstKey();
+        var nextEntry = reversed.firstEntry();
+
+        while (nextEntry != null) {
+            List<Purchase> lastDaysDate = nextEntry.getValue();
+            System.out.println(firstDate + " purchases : " + lastDaysDate.size());
+
+            LocalDate nextDate = reversed.higherKey(firstDate);
+            nextEntry = reversed.higherEntry(firstDate);
+            firstDate = nextDate;
+        }
+
+        separator();
+        datedPurchases.forEach((key, value) -> System.out.println(key + ": " + value));
+    }
+
+    private static void addPurchase(String name, Course course, double price) {
+        Student existingStudent = students.get(name);
+        if (existingStudent == null) {
+            existingStudent = new Student(name, course);
+            students.put(name, existingStudent);
+        } else {
+            existingStudent.addCourse(course);
+        }
+
+        int day = new Random().nextInt(1, 15);
+        String key = course.courseId() + "_" + existingStudent.getId();
+        int year = LocalDate.now().getYear();
+        Purchase purchase = new Purchase(course.courseId(),
+                existingStudent.getId(), price, year, day);
+        purchases.put(key, purchase);
+    }
+
+    private static void displayStats(int period, Map<LocalDate, List<Purchase>> periodData) {
+        separator();
+        Map<String, Integer> weeklyCounts = new TreeMap<>();
+        periodData.forEach((key, value) -> {
+            System.out.println(key + ": " + value);
+            for (Purchase p : value) {
+                weeklyCounts.merge(p.courseId(), 1, Integer::sum);
+            }
+        });
+        System.out.printf("Week %d Purchases = %s%n", period, weeklyCounts);
     }
 }
