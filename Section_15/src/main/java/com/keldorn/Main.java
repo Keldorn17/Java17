@@ -22,19 +22,10 @@ import java.util.*;
 public class Main {
     private static final Map<String, Purchase> purchases = new LinkedHashMap<>();
     private static final NavigableMap<String, Student> students = new TreeMap<>();
+    enum WeekDay {SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY}
 
     public static void main(String[] args) {
-//        collectionsOverview();
-//        cardTest();
-//        hashing();
-//        setsAndMaps();
-//        setOperations();
-//        treeSet();
-//        theaterTest();
-//        mapExamples();
-//        mapViews();
-//        gameTest();
-        sortedMap();
+        enumCollections();
     }
 
     private static void separator() {
@@ -742,5 +733,37 @@ public class Main {
             }
         });
         System.out.printf("Week %d Purchases = %s%n", period, weeklyCounts);
+    }
+
+    private static void enumCollections() {
+        separator();
+        List<WeekDay> annsWorkDays = new ArrayList<>(List.of(WeekDay.MONDAY,
+                WeekDay.TUESDAY, WeekDay.THURSDAY, WeekDay.FRIDAY));
+
+        var annsDaysSet = EnumSet.copyOf(annsWorkDays);
+        System.out.println(annsDaysSet.getClass().getSimpleName());
+        annsDaysSet.forEach(System.out::println);
+        var allDaysSet = EnumSet.allOf(WeekDay.class);
+        separator();
+        allDaysSet.forEach(System.out::println);
+
+        Set<WeekDay> newPersonDays = EnumSet.complementOf(annsDaysSet);
+        separator();
+        newPersonDays.forEach(System.out::println);
+
+        Set<WeekDay> anotherWay = EnumSet.copyOf(allDaysSet);
+        anotherWay.removeAll(annsDaysSet);
+        separator();
+        anotherWay.forEach(System.out::println);
+
+        Set<WeekDay> businessDays = EnumSet.range(WeekDay.MONDAY, WeekDay.FRIDAY);
+        separator();
+        businessDays.forEach(System.out::println);
+
+        Map<WeekDay, String[]> employeeMap = new EnumMap<>(WeekDay.class);
+
+        employeeMap.put(WeekDay.FRIDAY, new String[]{"Ann", "Mary", "Bob"});
+        employeeMap.put(WeekDay.MONDAY, new String[]{"Mary", "Bob"});
+        employeeMap.forEach((key, value) -> System.out.println(key + " : " + Arrays.toString(value)));
     }
 }
