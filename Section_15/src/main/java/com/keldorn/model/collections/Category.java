@@ -1,5 +1,5 @@
 package main.java.com.keldorn.model.collections;
 
 public enum Category {
-    PRODUCE, DAIRY
+    DAIRY, PRODUCE, MEAT, BAKERY, BEVERAGES, FROZEN, HOUSEHOLD
 }

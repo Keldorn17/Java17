@@ -7,9 +7,9 @@ public class InventoryItem {
     private int qtyReserved;
     private int qtyReordered;
     private final int qtyLow;
-    private final int salesPrice;
+    private final double salesPrice;
 
-    public InventoryItem(Product product, int qtyTotal, int qtyLow, int salesPrice) {
+    public InventoryItem(Product product, int qtyTotal, int qtyLow, double salesPrice) {
         this.product = product;
         placeInventoryOrder(qtyTotal);
         this.qtyLow = qtyLow;
@@ -37,11 +37,12 @@ public class InventoryItem {
         }
     }
 
-    protected void placeInventoryOrder(int quantity) {
-        qtyTotal += quantity;
-        if (qtyTotal < qtyLow) {
+    public void placeInventoryOrder(int quantity) {
+        if ((qtyTotal + quantity) < qtyLow) {
             throw new IllegalArgumentException("Insufficient order amount, please order at least: " + (qtyLow - quantity));
         }
+        qtyReordered = quantity;
+        qtyTotal += quantity;
     }
 
     private void quantityMoreThenTotal(int qty) {
@@ -60,5 +61,21 @@ public class InventoryItem {
         if (qty < 1) {
             throw new IllegalArgumentException("Quantity cannot be less then 1. (quantity = " + qty + ")");
         }
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public double getSalesPrice() {
+        return salesPrice;
+    }
+
+    public int getQtyTotal() {
+        return qtyTotal;
+    }
+
+    public int getQtyReserved() {
+        return qtyReserved;
     }
 }
