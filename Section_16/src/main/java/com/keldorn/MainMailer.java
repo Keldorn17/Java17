@@ -1,5 +1,7 @@
 package main.java.com.keldorn;
 
+import main.java.com.keldorn.external.util.Separator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +34,10 @@ public class MainMailer {
         System.out.println("There are " + counts.get(annJones) +
                 " records for " + annJones);
 
-        System.out.println("-".repeat(30));
+        Separator.SEPARATOR();
         counts.forEach((k, v) -> System.out.println(k + " : " + v));
 
-        System.out.println("-".repeat(30));
+        Separator.SEPARATOR();
         counts.keySet().forEach(k -> System.out.println(k + " : " + counts.get(k)));
 
     }
