@@ -34,10 +34,10 @@ public class MainMailer {
         System.out.println("There are " + counts.get(annJones) +
                 " records for " + annJones);
 
-        Separator.SEPARATOR();
+        Separator.separator();
         counts.forEach((k, v) -> System.out.println(k + " : " + v));
 
-        Separator.SEPARATOR();
+        Separator.separator();
         counts.keySet().forEach(k -> System.out.println(k + " : " + counts.get(k)));
 
     }
