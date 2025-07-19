@@ -3,7 +3,10 @@ package main.java.com.keldorn;
 import main.java.com.keldorn.external.domain.LivingPerson;
 import main.java.com.keldorn.external.util.Logger;
 import main.java.com.keldorn.external.util.Separator;
+import main.java.com.keldorn.model.bank.Bank;
+import main.java.com.keldorn.model.bank.BankAccount;
 import main.java.com.keldorn.model.bank.BankCustomer;
+import main.java.com.keldorn.model.bank.enums.AccountType;
 import main.java.com.keldorn.model.consumer.specific.ChildClass;
 import main.java.com.keldorn.model.generic.BaseClass;
 import main.java.com.keldorn.model.hacker.PersonOfInterest;
@@ -11,8 +14,9 @@ import main.java.com.keldorn.model.immutable.Person;
 import main.java.com.keldorn.model.immutable.PersonImmutable;
 import main.java.com.keldorn.model.immutable.PersonRecord;
 import main.java.com.keldorn.model.person.PersonR;
+import main.java.com.keldorn.model.unmodifiable.Student;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
 
@@ -21,8 +25,9 @@ public class Main {
         immutableClasses();
         personRecord();
         personImmutable();
-        bankAccountTest();
         copyingClasses();
+        unmodifiableCollections();
+        bankTest();
     }
 
     private static void finalExplored() {
@@ -147,16 +152,6 @@ public class Main {
         System.out.println(john);
     }
 
-    private static void bankAccountTest() {
-        Separator.separator();
-        BankCustomer joe = new BankCustomer("Joe", 500, 10000);
-        System.out.println(joe);
-
-        var accounts = joe.getAccounts();
-        accounts.clear();
-        System.out.println(joe);
-    }
-
     private static void copyingClasses() {
         Separator.separator();
 
@@ -185,5 +180,57 @@ public class Main {
         }
         System.out.println(persons[4]);
         System.out.println(personsCopy[4]);
+    }
+
+    private static void unmodifiableCollections() {
+        Separator.separator();
+        StringBuilder bobsNotes = new StringBuilder();
+        StringBuilder billsNotes = new StringBuilder("Bill struggles with generics");
+
+        Student bob = new Student("Bob", bobsNotes);
+        Student bill = new Student("Bill", billsNotes);
+
+        List<Student> students = new ArrayList<>(List.of(bob, bill));
+        List<Student> studentsFirstCopy = new ArrayList<>(students);
+        List<Student> studentsSecondCopy = List.copyOf(students);
+        List<Student> studentsThirdCopy = Collections.unmodifiableList(students);
+
+        studentsFirstCopy.add(new Student("Bonnie", new StringBuilder()));
+//        studentsThirdCopy.set(0, new Student("Bonnie", new StringBuilder()));
+        studentsFirstCopy.sort(Comparator.comparing(Student::getName));
+        students.add(new Student("Bonnie", new StringBuilder()));
+        bobsNotes.append("Bob was one of mz first students.");
+
+        StringBuilder bonniesNotes = studentsFirstCopy.get(2).getStudentNotes();
+        bonniesNotes.append("Bonnie is taking 3 of my courses");
+
+        students.forEach(System.out::println);
+        Separator.separator();
+        studentsFirstCopy.forEach(System.out::println);
+        Separator.separator();
+        studentsSecondCopy.forEach(System.out::println);
+        Separator.separator();
+        studentsThirdCopy.forEach(System.out::println);
+        Separator.separator();
+    }
+
+    private static void bankTest() {
+        Separator.separator();
+        Bank bank = new Bank(123456);
+        UUID customerId = bank.addCustomer("Joe", 500, 10000);
+
+        BankCustomer joe = bank.getCustomer(customerId.toString());
+        System.out.println(joe);
+
+        bank.doTransaction(joe.getCustomerId().toString(), AccountType.CHECKING, 35);
+        System.out.println(joe);
+
+        bank.doTransaction(joe.getCustomerId().toString(), AccountType.CHECKING, -535);
+        System.out.println(joe);
+
+        BankAccount checking = joe.getAccount(AccountType.CHECKING);
+        var transactions = checking.getTransactions();
+        transactions.forEach((k, v) -> System.out.println(k + ": " + v));
+
     }
 }

@@ -1,4 +1,4 @@
-package main.java.com.keldorn.model.bank.dto;
+package main.java.com.keldorn.model.bank.enums;
 
 public enum AccountType {
     CHECKING, SAVINGS

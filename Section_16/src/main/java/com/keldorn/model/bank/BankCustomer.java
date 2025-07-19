@@ -1,18 +1,15 @@
 package main.java.com.keldorn.model.bank;
 
-import main.java.com.keldorn.model.bank.dto.AccountType;
+import main.java.com.keldorn.model.bank.enums.AccountType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public final class BankCustomer {
     private final String name;
-    private final UUID id = UUID.randomUUID();
+    private final UUID customerId = UUID.randomUUID();
     private final List<BankAccount> accounts = new ArrayList<>();
 
-    public BankCustomer(String name, double checkingAmount, double savingsAmount) {
+    BankCustomer(String name, double checkingAmount, double savingsAmount) {
         this.name = name;
         accounts.add(new BankAccount(AccountType.CHECKING, checkingAmount));
         accounts.add(new BankAccount(AccountType.SAVINGS, savingsAmount));
@@ -23,18 +20,29 @@ public final class BankCustomer {
     }
 
     public List<BankAccount> getAccounts() {
-        List<BankAccount> copy = new ArrayList<>();
+        return List.copyOf(accounts);
+    }
+
+    public BankAccount getAccount(AccountType type) {
+        BankAccount found = null;
         for (var account : accounts) {
-            copy.add(new BankAccount(account));
+            if (account.getAccountType() == type) {
+                found = account;
+                break;
+            }
         }
-        return copy;
+        return found;
+    }
+
+    public UUID getCustomerId() {
+        return customerId;
     }
 
     @Override
     public String toString() {
         String[] accountStrings = new String[accounts.size()];
         Arrays.setAll(accountStrings, i -> accounts.get(i).toString());
-        return "Customer: %s (id:%s)%n\t%s%n".formatted(name, id.toString(),
+        return "Customer: %s (id:%s)%n\t%s%n".formatted(name, customerId.toString(),
                 String.join("\n\t", accountStrings));
     }
 }
