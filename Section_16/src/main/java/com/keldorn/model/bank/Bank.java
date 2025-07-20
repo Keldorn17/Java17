@@ -3,10 +3,7 @@ package main.java.com.keldorn.model.bank;
 import main.java.com.keldorn.model.bank.enums.AccountType;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public final class Bank {
 
@@ -22,10 +19,18 @@ public final class Bank {
         return customers.get(id);
     }
 
-    public UUID addCustomer(String name, double checkingInitialDeposit, double savingsInitialDeposit) {
+    public String getCustomerId(String name) {
+        for (Map.Entry<String, BankCustomer> entry : customers.entrySet()) {
+            if (entry.getValue().getName().equalsIgnoreCase(name)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public void addCustomer(String name, double checkingInitialDeposit, double savingsInitialDeposit) {
         BankCustomer customer = new BankCustomer(name, checkingInitialDeposit, savingsInitialDeposit);
         customers.put(customer.getCustomerId().toString(), customer);
-        return customer.getCustomerId();
     }
 
     public synchronized void doTransaction(String id, AccountType type, BigDecimal amount) {

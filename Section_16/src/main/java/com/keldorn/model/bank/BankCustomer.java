@@ -5,12 +5,13 @@ import main.java.com.keldorn.model.bank.enums.AccountType;
 import java.util.*;
 
 public final class BankCustomer {
+    private static long namePrefix = 100;
     private final String name;
     private final UUID customerId = UUID.randomUUID();
     private final List<BankAccount> accounts = new ArrayList<>();
 
     BankCustomer(String name, double checkingAmount, double savingsAmount) {
-        this.name = name;
+        this.name = name == null ? "Default name" + namePrefix++ : name;
         accounts.add(new BankAccount(AccountType.CHECKING, checkingAmount));
         accounts.add(new BankAccount(AccountType.SAVINGS, savingsAmount));
     }

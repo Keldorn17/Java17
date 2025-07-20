@@ -1,5 +1,6 @@
 package main.java.com.keldorn;
 
+import main.java.com.keldorn.external.child.Child;
 import main.java.com.keldorn.external.domain.LivingPerson;
 import main.java.com.keldorn.external.util.Logger;
 import main.java.com.keldorn.external.util.Separator;
@@ -13,6 +14,9 @@ import main.java.com.keldorn.model.hacker.PersonOfInterest;
 import main.java.com.keldorn.model.immutable.Person;
 import main.java.com.keldorn.model.immutable.PersonImmutable;
 import main.java.com.keldorn.model.immutable.PersonRecord;
+import main.java.com.keldorn.model.parent.Generation;
+import main.java.com.keldorn.model.parent.Parent;
+import main.java.com.keldorn.model.parent.PersonConstructors;
 import main.java.com.keldorn.model.person.PersonR;
 import main.java.com.keldorn.model.unmodifiable.Student;
 
@@ -28,6 +32,7 @@ public class Main {
         copyingClasses();
         unmodifiableCollections();
         bankTest();
+        constructorsProject();
     }
 
     private static void finalExplored() {
@@ -217,9 +222,9 @@ public class Main {
     private static void bankTest() {
         Separator.separator();
         Bank bank = new Bank(123456);
-        UUID customerId = bank.addCustomer("Joe", 500, 10000);
+        bank.addCustomer("Joe", 500, 10000);
 
-        BankCustomer joe = bank.getCustomer(customerId.toString());
+        BankCustomer joe = bank.getCustomer(bank.getCustomerId("joe"));
         System.out.println(joe);
 
         bank.doTransaction(joe.getCustomerId().toString(), AccountType.CHECKING, 35);
@@ -232,5 +237,22 @@ public class Main {
         var transactions = checking.getTransactions();
         transactions.forEach((k, v) -> System.out.println(k + ": " + v));
 
+    }
+
+    private static void constructorsProject() {
+        Separator.separator();
+        Parent parent = new Parent("Jane Doe", "01/01/1950", 4);
+        Child child = new Child();
+
+        System.out.println("Parent: " + parent);
+        System.out.println("Child: " + child);
+
+        PersonConstructors joe = new PersonConstructors("Joe", "01-01-1950");
+        System.out.println(joe);
+
+        PersonConstructors joeCopy = new PersonConstructors(joe);
+        System.out.println(joeCopy);
+
+        Generation g = Generation.BABY_BOOMER;
     }
 }
