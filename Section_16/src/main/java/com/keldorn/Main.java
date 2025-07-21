@@ -9,6 +9,8 @@ import main.java.com.keldorn.model.bank.BankAccount;
 import main.java.com.keldorn.model.bank.BankCustomer;
 import main.java.com.keldorn.model.bank.enums.AccountType;
 import main.java.com.keldorn.model.consumer.specific.ChildClass;
+import main.java.com.keldorn.model.game.GameConsole;
+import main.java.com.keldorn.model.game.ShooterGame;
 import main.java.com.keldorn.model.generic.BaseClass;
 import main.java.com.keldorn.model.hacker.PersonOfInterest;
 import main.java.com.keldorn.model.immutable.Person;
@@ -18,6 +20,9 @@ import main.java.com.keldorn.model.parent.Generation;
 import main.java.com.keldorn.model.parent.Parent;
 import main.java.com.keldorn.model.parent.PersonConstructors;
 import main.java.com.keldorn.model.person.PersonR;
+import main.java.com.keldorn.model.pirate.Pirate;
+import main.java.com.keldorn.model.pirate.PirateGame;
+import main.java.com.keldorn.model.pirate.enums.Weapon;
 import main.java.com.keldorn.model.unmodifiable.Student;
 
 import java.util.*;
@@ -33,6 +38,7 @@ public class Main {
         unmodifiableCollections();
         bankTest();
         constructorsProject();
+        pirateGame();
     }
 
     private static void finalExplored() {
@@ -254,5 +260,34 @@ public class Main {
         System.out.println(joeCopy);
 
         Generation g = Generation.BABY_BOOMER;
+    }
+
+    private static void shooterGame() {
+        Separator.separator();
+        var console = new GameConsole<>(new ShooterGame("The Shootout Game"));
+        int playerIndex = console.addPlayer();
+        console.playGame(playerIndex);
+    }
+
+    private static void pirateGame() {
+        Separator.separator();
+        Weapon weapon = Weapon.getWeaponByChar('P');
+        System.out.println("weapon = " + weapon + ", hitPoints = " +
+                weapon.getHitPoints() + ", minLevel = " + weapon.getMinLevel());
+
+        var list = Weapon.getWeaponsByLevel(1);
+        list.forEach(System.out::println);
+
+        Pirate tim = new Pirate("Tim");
+        System.out.println(tim);
+
+        Objects.requireNonNull(PirateGame.getTowns(0)).forEach(System.out::println);
+        Separator.separator();
+        Objects.requireNonNull(PirateGame.getTowns(1)).forEach(System.out::println);
+
+        Separator.separator();
+        var console = new GameConsole<>(new PirateGame("The Pirate Game"));
+        int playerIndex = console.addPlayer();
+        console.playGame(playerIndex);
     }
 }
