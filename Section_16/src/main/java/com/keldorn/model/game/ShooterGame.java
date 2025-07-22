@@ -3,7 +3,7 @@ package main.java.com.keldorn.model.game;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ShooterGame extends Game<Shooter>{
+public final class ShooterGame extends Game<Shooter> {
     public ShooterGame(String gameName) {
         super(gameName);
     }

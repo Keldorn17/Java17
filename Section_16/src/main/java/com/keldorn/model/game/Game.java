@@ -50,13 +50,13 @@ public abstract class Game<T extends Player> {
         return action.action().test(player);
     }
 
-    private boolean printPlayer(int playerIndex) {
+    public boolean printPlayer(int playerIndex) {
         Player player = players.get(playerIndex);
         System.out.println(player);
         return false;
     }
 
-    private boolean quitGame(int playerIndex) {
+    public boolean quitGame(int playerIndex) {
         Player player = players.get(playerIndex);
         System.out.println("Sorry to see you go, " + player.name());
         return true;

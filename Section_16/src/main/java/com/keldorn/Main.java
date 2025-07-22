@@ -20,9 +20,7 @@ import main.java.com.keldorn.model.parent.Generation;
 import main.java.com.keldorn.model.parent.Parent;
 import main.java.com.keldorn.model.parent.PersonConstructors;
 import main.java.com.keldorn.model.person.PersonR;
-import main.java.com.keldorn.model.pirate.Pirate;
 import main.java.com.keldorn.model.pirate.PirateGame;
-import main.java.com.keldorn.model.pirate.enums.Weapon;
 import main.java.com.keldorn.model.unmodifiable.Student;
 
 import java.util.*;
@@ -271,21 +269,21 @@ public class Main {
 
     private static void pirateGame() {
         Separator.separator();
-        Weapon weapon = Weapon.getWeaponByChar('P');
-        System.out.println("weapon = " + weapon + ", hitPoints = " +
-                weapon.getHitPoints() + ", minLevel = " + weapon.getMinLevel());
-
-        var list = Weapon.getWeaponsByLevel(1);
-        list.forEach(System.out::println);
-
-        Pirate tim = new Pirate("Tim");
-        System.out.println(tim);
-
-        Objects.requireNonNull(PirateGame.getTowns(0)).forEach(System.out::println);
-        Separator.separator();
-        Objects.requireNonNull(PirateGame.getTowns(1)).forEach(System.out::println);
-
-        Separator.separator();
+//        Weapon weapon = Weapon.getWeaponByChar('P');
+//        System.out.println("weapon = " + weapon + ", hitPoints = " +
+//                weapon.getHitPoints() + ", minLevel = " + weapon.getMinLevel());
+//
+//        var list = Weapon.getWeaponsByLevel(1);
+//        list.forEach(System.out::println);
+//
+//        Pirate tim = new Pirate("Tim");
+//        System.out.println(tim);
+//
+//        Objects.requireNonNull(PirateGame.getTowns(0)).forEach(t -> System.out.println(t.information()));
+//        Separator.separator();
+//        Objects.requireNonNull(PirateGame.getTowns(1)).forEach(t -> System.out.println(t.information()));
+//
+//        Separator.separator();
         var console = new GameConsole<>(new PirateGame("The Pirate Game"));
         int playerIndex = console.addPlayer();
         console.playGame(playerIndex);
