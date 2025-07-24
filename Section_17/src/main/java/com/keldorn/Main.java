@@ -1,7 +1,12 @@
 package main.java.com.keldorn;
 
+import main.java.com.keldorn.dto.Seat;
+import main.java.com.keldorn.dto.Seat2;
+import main.java.com.keldorn.model.course.Student;
+import main.java.com.keldorn.model.course.dto.Course;
 import main.java.com.keldorn.util.Separator;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -12,6 +17,9 @@ public class Main {
     public static void main(String[] args) {
         streams();
         streamChallenge();
+        streamsIntermediate();
+        streamTerminal();
+        streamingStudents();
     }
 
     private static void streams() {
@@ -175,5 +183,100 @@ public class Main {
 
     private static int getCounter() {
         return counter++;
+    }
+
+    private static void streamsIntermediate() {
+        Separator.separator();
+        IntStream.iterate('A', i -> i <= (int) 'z', i -> i + 1)
+                .filter(Character::isAlphabetic)
+//                .filter(i -> Character.toUpperCase(i) > 'E')
+//                .skip(5)
+//                .dropWhile(i -> Character.toUpperCase(i) <= 'E')  // Once it become true it never checks again so in this case toUppercase does nothing.
+//                .takeWhile(i -> i < 'a')
+                .map(Character::toUpperCase)
+                .distinct()
+                .forEach(d -> System.out.printf("%c ", d));
+
+        Separator.separator(true);
+        Random random = new Random();
+        Stream.generate(() -> random.nextInt('A', (int) 'Z' + 1))
+                .limit(50)
+                .distinct()
+                .sorted()
+                .forEach(d -> System.out.printf("%c ", d));
+
+        Separator.separator(true);
+        var stream = getSeatStream();
+        stream.forEach(System.out::println);
+    }
+
+    private static Stream<Seat> getSeatStream() {
+        int maxSeats = 100;
+        int seatsInRow = 10;
+
+        return Stream.iterate(0, i -> i < maxSeats, i -> i + 1)
+                .map(i -> new Seat((char) ('A' + i / seatsInRow), i % seatsInRow + 1))
+                .skip(5)
+                .limit(10)
+                .peek(s -> System.out.println("--> " + s))
+//                .mapToDouble(Seat::price)
+//                .boxed()
+//                .map("%.2f"::formatted);
+                .sorted(Comparator.comparing(Seat::price)
+                        .thenComparing(Seat::toString));
+    }
+
+    private static void streamTerminal() {
+        Separator.separator();
+        var result = IntStream
+                .iterate(0, i -> i <= 1000, i -> i + 3)
+                .summaryStatistics();
+        System.out.println("Result = " + result);
+
+        final int currentYear = LocalDate.now().getYear();
+        var leapYearData = IntStream
+                .iterate(2000, i -> i <= currentYear, i -> i + 1)
+                .filter(i -> i % 4 == 0)
+                .peek(System.out::println)
+                .summaryStatistics();
+
+        System.out.println("Leap Year Data = " + leapYearData);
+
+        Seat2[] seats = new Seat2[100];
+        Arrays.setAll(seats, i -> new Seat2((char) ('A' + i / 10), i % 10 + 1));
+//        Arrays.asList(seats).forEach(System.out::println);
+        long reservationCount = Arrays
+                .stream(seats)
+                .filter(Seat2::isReserved)
+                .count();
+        System.out.println("reservationCount = " + reservationCount);
+
+        boolean hasBookings = Arrays
+                .stream(seats)
+                .anyMatch(Seat2::isReserved);
+
+        System.out.println("hasBookings = " + hasBookings);
+
+        boolean fullyBooked = Arrays
+                .stream(seats)
+                .allMatch(Seat2::isReserved);
+
+        System.out.println("fullyBooked = " + fullyBooked);
+
+        boolean eventWashedOut = Arrays
+                .stream(seats)
+                .noneMatch(Seat2::isReserved);
+
+        System.out.println("eventWashedOut = " + eventWashedOut);
+    }
+
+    private static void streamingStudents() {
+        Separator.separator();
+        Course pymc = new Course("PYMC", "Python Masterclass");
+        Course jmc = new Course("JMC", "Java Masterclass");
+
+        Stream.generate(() -> Student.getRandomStudent(jmc, pymc))
+                .limit(10)
+                .forEach(System.out::println);
     }
 }
