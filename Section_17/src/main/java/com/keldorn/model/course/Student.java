@@ -132,6 +132,20 @@ public final class Student {
         return student;
     }
 
+    public static Student getRandomStudent(boolean useRandomSubset, Course... courses) {
+        if (courses == null || courses.length == 0) {
+            throw new IllegalArgumentException("At least one course must be provided");
+        }
+        if (!useRandomSubset || courses.length == 1) {
+            return getRandomStudent(courses);
+        }
+        int randomNumber = random.nextInt(courses.length) + 1;
+        final List<Course> list = new ArrayList<>(Arrays.asList(courses));
+        Collections.shuffle(list);
+        Course[] result = list.subList(0, randomNumber).toArray(new Course[0]);
+        return getRandomStudent(result);
+    }
+
     @Override
     public String toString() {
         return "Student{" +

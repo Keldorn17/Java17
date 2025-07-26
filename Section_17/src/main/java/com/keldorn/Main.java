@@ -2,6 +2,7 @@ package main.java.com.keldorn;
 
 import main.java.com.keldorn.dto.Seat;
 import main.java.com.keldorn.dto.Seat2;
+import main.java.com.keldorn.model.course.CourseEngagement;
 import main.java.com.keldorn.model.course.Gender;
 import main.java.com.keldorn.model.course.Student;
 import main.java.com.keldorn.model.course.dto.Course;
@@ -9,10 +10,13 @@ import main.java.com.keldorn.util.Separator;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.*;
 
 public class Main {
     private static int counter;
@@ -24,6 +28,10 @@ public class Main {
         streamTerminal();
         streamingStudents();
         mainCollect();
+        mainOptional();
+        mainTerminalOptional();
+        mainMapping();
+        streamsChallenge();
     }
 
     private static void streams() {
@@ -415,5 +423,258 @@ public class Main {
                 .sorted()
                 .reduce("", (r, v) -> r + " " + v);
         System.out.println("countryList =" + countryList);
+    }
+
+    private static void mainOptional() {
+        Separator.separator();
+        Course pymc = new Course("PYMC", "Python Masterclass");
+        Course jmc = new Course("JMC", "Java Masterclass");
+
+        List<Student> students =
+                Stream.generate(() -> Student.getRandomStudent(jmc, pymc))
+                        .limit(1000)
+                        .collect(Collectors.toList());
+
+        Optional<Student> o1 = getStudent(null, "first");
+        System.out.println("Empty = " + o1.isEmpty() + ", Present = " + o1.isPresent());
+        System.out.println(o1);
+        o1.ifPresentOrElse(System.out::println, () -> System.out.println("---> Empty"));
+
+//        students.addFirst(null);
+        Optional<Student> o2 = getStudent(students, "first");
+        System.out.println("Empty = " + o2.isEmpty() + ", Present = " + o2.isPresent());
+        o2.ifPresent(System.out::println);
+
+//        Student firstStudent = o2.orElse(getDummyStudent(jmc));
+        Student firstStudent = o2.orElseGet(() -> getDummyStudent(jmc));
+        String id = firstStudent.getStudentId().toString();
+        System.out.println("firstStudent's id is " + id);
+
+        List<String> countries = students.stream()
+                .map(Student::getCountryCode)
+                .distinct()
+                .toList();
+
+        Optional.of(countries)
+                .map(l -> String.join(",", l))
+                .filter(l -> l.contains("FR"))
+                .ifPresentOrElse(System.out::println,
+                        () -> System.out.println("Missing FR"));
+    }
+
+    private static Optional<Student> getStudent(List<Student> list, String type) {
+        if (list == null || list.isEmpty()) {
+            return Optional.empty();
+        } else if (type.equals("first")) {
+            return Optional.ofNullable(list.getFirst());
+        } else if (type.equals("last")) {
+            return Optional.ofNullable(list.getLast());
+        }
+        return Optional.of(list.get(new Random().nextInt(list.size())));
+    }
+
+    private static Student getDummyStudent(Course... courses) {
+        System.out.println("Getting the dummy student");
+        return new Student("NO", 1, 1, Gender.OTHER, false, courses);
+    }
+
+    private static void mainTerminalOptional() {
+        Separator.separator();
+        Course pymc = new Course("PYMC", "Python Masterclass");
+        Course jmc = new Course("JMC", "Java Masterclass");
+
+        List<Student> students =
+                Stream.generate(() -> Student.getRandomStudent(jmc, pymc))
+                        .limit(1000)
+                        .toList();
+
+        int minAge = 21;
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .findAny()
+                .ifPresentOrElse(s -> System.out.printf("Student %s from %s is %d%n",
+                                s.getStudentId(), s.getCountryCode(), s.getAge()),
+                        () -> System.out.println("Didn't find anyone under " + minAge));
+
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .findFirst()
+                .ifPresentOrElse(s -> System.out.printf("Student %s from %s is %d%n",
+                                s.getStudentId(), s.getCountryCode(), s.getAge()),
+                        () -> System.out.println("Didn't find anyone under " + minAge));
+
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .min(Comparator.comparing(Student::getAge))
+                .ifPresentOrElse(s -> System.out.printf("Student %s from %s is %d%n",
+                                s.getStudentId(), s.getCountryCode(), s.getAge()),
+                        () -> System.out.println("Didn't find anyone under " + minAge));
+
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .max(Comparator.comparing(Student::getAge))
+                .ifPresentOrElse(s -> System.out.printf("Student %s from %s is %d%n",
+                                s.getStudentId(), s.getCountryCode(), s.getAge()),
+                        () -> System.out.println("Didn't find anyone under " + minAge));
+
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .mapToInt(Student::getAge)
+                .average()
+                .ifPresentOrElse(a -> System.out.printf("Avg age under 21: %.2f%n", a),
+                        () -> System.out.println("Didn't find anyone under " + minAge));
+
+        students.stream()
+                .filter(s -> s.getAge() <= minAge)
+                .map(Student::getCountryCode)
+                .distinct()
+                .reduce((a, b) -> String.join(",", a, b))
+                .ifPresentOrElse(System.out::println,
+                        () -> System.out.println("None found"));
+
+        students.stream()
+                .map(Student::getCountryCode)
+                .distinct()
+                .map(l -> String.join(",", l))
+                .filter(l -> l.contains("AU"))
+                .findAny()
+                .ifPresentOrElse(System.out::println,
+                        () -> System.out.println("Missing AU"));
+    }
+
+    private static void mainMapping() {
+        Separator.separator();
+        Course pymc = new Course("PYMC", "Python Masterclass", 50);
+        Course jmc = new Course("JMC", "Java Masterclass", 100);
+        Course cgj = new Course("CGJ", "Creating Games in Java");
+
+        var students = Stream.generate(() -> Student.getRandomStudent(pymc, jmc))
+                .limit(5000)
+                .toList();
+
+        var mappedStudents = students.stream()
+                .collect(Collectors.groupingBy(Student::getCountryCode));
+
+        mappedStudents.forEach((k, v) -> System.out.println(k + " " + v.size()));
+
+        Separator.separator();
+        int minAge = 25;
+        var youngerSet = students.stream()
+                .collect(groupingBy(Student::getCountryCode,
+                        filtering(s -> s.getAge() <= minAge, toList())));
+        youngerSet.forEach((k, v) -> System.out.println(k + " " + v.size()));
+
+        var experienced = students.stream()
+                .collect(partitioningBy(Student::hasProgrammingExperience));
+        System.out.println("Experienced Students = " + experienced.get(true).size());
+
+        var expCount = students.stream()
+                .collect(partitioningBy(Student::hasProgrammingExperience, counting()));
+        System.out.println("Experienced Students = " + expCount.get(true));
+
+        var experiencedAndActive = students.stream()
+                .collect(partitioningBy(
+                        s -> s.hasProgrammingExperience()
+                                && s.getMonthsSinceActive() == 0,
+                        counting()));
+        System.out.println("Experienced and Active Students = " + experiencedAndActive.get(true));
+
+        var multiLevel = students.stream()
+                .collect(groupingBy(Student::getCountryCode,
+                        groupingBy(Student::getGender)));
+
+        multiLevel.forEach((key, value) -> {
+            System.out.println(key);
+            value.forEach((k, v) -> System.out.println("\t" + k + " " + v.size()));
+        });
+
+        long studentBodyCount = 0;
+        for (var list : experienced.values()) {
+            studentBodyCount += list.size();
+        }
+        System.out.println("studentBodyCount = " + studentBodyCount);
+
+        studentBodyCount = experienced.values().stream()
+                .mapToInt(List::size)
+                .sum();
+
+        System.out.println("studentBodyCount = " + studentBodyCount);
+
+        studentBodyCount = experienced.values().stream()
+                .map(l -> l.stream()
+                        .filter(s -> s.getMonthsSinceActive() <= 3)
+                        .count())
+                .mapToLong(l -> l)
+                .sum();
+
+        System.out.println("studentBodyCount = " + studentBodyCount);
+
+        long count = experienced.values().stream()
+                .flatMap(Collection::stream)
+                .filter(s -> s.getMonthsSinceActive() <= 3)
+                .count();
+        System.out.println("Active Students = " + count);
+
+        count = multiLevel.values().stream()
+                .flatMap(map -> map.values().stream()
+                        .flatMap(Collection::stream))
+                .filter(s -> s.getMonthsSinceActive() <= 3)
+                .count();
+        System.out.println("Active Students in multiLevel = " + count);
+
+        count = multiLevel.values().stream()
+                .flatMap(map -> map.values().stream())
+                .flatMap(Collection::stream)
+                .filter(s -> s.getMonthsSinceActive() <= 3)
+                .count();
+        System.out.println("Active Students in multiLevel = " + count);
+    }
+
+    private static void streamsChallenge() {
+        Separator.separator();
+        Course pymc = new Course("PYMC", "Python Masterclass", 50);
+        Course jmc = new Course("JMC", "Java Masterclass", 100);
+        Course cgj = new Course("CGJ", "Creating Games in Java");
+
+        var students = Stream.generate(() -> Student.getRandomStudent(true, pymc, jmc, cgj))
+                .filter(s -> s.getYearsSinceEnrolled() <= 4)
+                .limit(10_000)
+                .toList();
+
+//        System.out.println(students.stream()
+//                .mapToInt(Student::getYearEnrolled)
+//                .summaryStatistics());
+//        students.subList(0, 10).forEach(System.out::println);
+
+        System.out.println("Student course enrollment data: ");
+        students.stream()
+                .flatMap(s -> s.getEngagementMap().keySet().stream())
+                .collect(groupingBy(Function.identity(), counting()))
+                // Instead of Function.identity() CourseEngagement::getCourseCode is also viable.
+                .forEach((k, v) -> System.out.println(k + " " + v));
+
+        students.stream()
+                .collect(groupingBy(s -> s.getEngagementMap().size(), counting()))
+                .forEach((k, v) -> System.out.println(k + " courses: " + v + " students"));
+
+        students.stream()
+                .flatMap(s -> s.getEngagementMap().values().stream())
+                .collect(groupingBy(CourseEngagement::getCourseCode,
+                        averagingDouble(CourseEngagement::getPercentComplete)))
+                // summarizingDouble give a summary of all statistics
+                .forEach((k, v) -> System.out.printf("%s: %.2f%% complete%n", k, v));
+
+        students.stream()
+                .flatMap(s -> s.getEngagementMap().values().stream())
+                .collect(groupingBy(CourseEngagement::getCourseCode,
+                        groupingBy(CourseEngagement::getLastActivityYear,
+                                counting())))
+                .forEach((k, v) -> System.out.println(k + " " + v));
+
+        students.stream()
+                .flatMap(s -> s.getEngagementMap().values().stream())
+                .collect(groupingBy(CourseEngagement::getEnrollmentYear,
+                        groupingBy(CourseEngagement::getCourseCode, counting())))
+                .forEach((k, v) -> System.out.println(k + ": " + v));
     }
 }
