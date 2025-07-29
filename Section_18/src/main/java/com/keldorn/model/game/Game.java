@@ -20,7 +20,7 @@ public abstract class Game<T extends Player> {
             standardActions = new LinkedHashMap<>(Map.of(
                     'I',
                     new GameAction('I', "Print Player Info",
-                            i -> this.printPlayer(i)),
+                            this::printPlayer),
                     'Q',
                     new GameAction('Q', "Quit Game",
                             this::quitGame)
