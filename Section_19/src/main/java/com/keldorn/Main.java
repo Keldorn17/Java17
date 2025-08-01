@@ -3,11 +3,16 @@ package main.java.com.keldorn;
 import main.java.com.keldorn.util.Separator;
 
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) {
         regularExpressions();
         miniChallenges();
+        patterMatching();
+        review();
+        emailChallenge();
     }
 
     private static void regularExpressions() {
@@ -100,7 +105,7 @@ public class Main {
         System.out.println(sentence2 + ": " + matches2);
         Separator.separator();
 
-        for (var string : new String[] {
+        for (var string : new String[]{
                 "The bike is red, and has flat tires.",
                 "I love being a new L.P.A. student!",
                 "Hello, friends and family: Welcome!",
@@ -108,7 +113,182 @@ public class Main {
         }) {
             System.out.println(string + ": " + string.matches("^[A-Z].*\\p{Punct}$"));
         }
-        Separator.separator();
+    }
 
+    private static void patterMatching() {
+        Separator.separator();
+        String sentence = "I like B.M.W. motorcycles.";
+        boolean matched = Pattern.matches("[A-Z].*[.]", sentence);
+        System.out.println(matched + ": " + sentence);
+
+        Pattern firstPattern = Pattern.compile("[A-Z].*?[.]");
+        var matcher = firstPattern.matcher(sentence);
+        System.out.println(matcher.matches() + ": " + sentence);
+        System.out.println("sentence.length:" + sentence.length());
+        System.out.println("Matched Ending Index: " + matcher.end());
+
+        System.out.println(matcher.lookingAt() + ": " + sentence);
+        System.out.println("Matched Ending Index: " + matcher.end());
+        System.out.println("Matched on: " +
+                sentence.substring(0, matcher.end()));
+
+        matcher.reset();
+        System.out.println(matcher.find() + ": " + sentence);
+        System.out.println("Matched Ending Index: " + matcher.end());
+        System.out.println("Matched on: " +
+                sentence.substring(matcher.start(), matcher.end()));
+
+        System.out.println("Matched on: " + matcher.group());
+
+        String htmlSnippet = """
+                <h1>My Heading</h1>
+                <h2>Sub-heading</h2>
+                <p>This is a paragraph about something.</p>
+                <p>This is another paragraph about something else.</p>
+                <h3>Summary</h3>
+                """;
+
+        Pattern htmlPatter = Pattern.compile("<[hH](?<level>\\d)>(.*)</[hH]\\d>");
+        Matcher htmlMatcher = htmlPatter.matcher(htmlSnippet);
+
+        while (htmlMatcher.find()) {
+//            System.out.println("group: " + htmlMatcher.group());
+//            System.out.println("group0: " + htmlMatcher.group(0));
+            System.out.println(htmlMatcher.group("level") + " " +
+                    htmlMatcher.group(2));
+            System.out.println("index = " + htmlMatcher.start("level"));
+        }
+
+        htmlMatcher.reset();
+        htmlMatcher.results()
+                .forEach(mr -> System.out.println(mr.group(1) + " " + mr.group(2)));
+
+        String tabbedText = """
+                group1 group2 group3
+                1 2 3
+                a b d
+                """;
+        tabbedText.lines()
+                .flatMap(s -> Pattern.compile(" ").splitAsStream(s))
+                .forEach(System.out::println);
+
+        htmlMatcher.reset();
+        String updatedSnippet = htmlMatcher.replaceFirst((mr) ->
+                "<em>" + mr.group(2) + "</em>");
+        Separator.separator();
+        System.out.println(updatedSnippet);
+        System.out.println(htmlMatcher.start() + " : " + htmlMatcher.end());
+        System.out.println(htmlMatcher.group(2));
+
+        htmlMatcher.usePattern(
+                Pattern.compile("<([hH]\\d)>(.*)</\\1>")
+        );
+
+        htmlMatcher.reset();
+        Separator.separator();
+        System.out.println("Using Back Reference: \n" +
+                htmlMatcher.replaceFirst("<em>$2</em>"));
+
+        String replacedHTML = htmlMatcher.replaceAll((mr) ->
+                "<em>" + mr.group(2) + "</em>");
+        Separator.separator();
+        System.out.println(replacedHTML);
+
+        htmlMatcher.reset();
+        StringBuilder sb = new StringBuilder();
+        int index = 1;
+        while (htmlMatcher.find()) {
+            htmlMatcher.appendReplacement(sb,
+                    switch (htmlMatcher.group(1).toLowerCase()) {
+                        case "h1" -> "<head>$2</head>";
+                        case "h2" -> "<em>$2</em>";
+                        default -> "<$1>" + index++ + ". $2</$1>";
+                    });
+        }
+        htmlMatcher.appendTail(sb);
+        System.out.println(sb);
+    }
+
+    private static void review() {
+        Separator.separator();
+        String phoneList = """
+                (800) 123-4567
+                (800)123-4567
+                (800) 123 4567
+                800-123-4567
+                800 123-4567
+                800 123 4567
+                8001234567
+                """;
+        Pattern phonePattern =
+                Pattern.compile("\\(*[0-9]{3}[)\\s-]*[0-9]{3}[\\s-]*[0-9]{4}");
+        // "\\(*[0-9]{3}[)\\s-]*[0-9]{3}[\\s-]*[0-9]{4}"
+        // "\\(*\\d{3}[)\\s-]*\\d{3}[\\s-]*\\d{4}"
+        // "\\(*[0-9]{3}[)\\s-]*\\d{3}[\\s-]*\\p{Digit}{4}"
+
+        Matcher phoneMatcher = phonePattern.matcher(phoneList);
+        phoneMatcher.results().forEach(mr -> System.out.println(mr.group()));
+
+        String htmlSnippets = """
+                <H1>My Heading</h1>
+                <h2>Sub-heading</h2>
+                <p>This is a paragraph about something.</p>
+                <p style="abc">This is another paragraph about something else.</p>
+                <h3 id="third">Summary</h3>
+                <br/>
+                <p>Testing</p>
+                """;
+
+        Pattern htmlPatter =
+                Pattern.compile("<(\\w+)[^>]*>([^\\v</>]*)(</\\1>)*",
+                        Pattern.CASE_INSENSITIVE);
+        // Pattern.compile("<(\\w+)[^>]*>([^\\v</>]*)((?i)</\\1>)*")
+        // Pattern.compile("<(a-zA-Z_0-9)[^>]*>([^\\v</>]*)((?i)</\\1>)*")
+        Matcher m = htmlPatter.matcher(htmlSnippets);
+        m.results()
+                .filter(mr -> mr.group(1).toLowerCase().startsWith("h"))
+                .forEach(mr -> System.out.println("Full Tag: " + mr.group(0) +
+                        "\n\tType: " + mr.group(1) +
+                        "\n\tText: " + mr.group(2)));
+    }
+
+    private static void emailChallenge() {
+        Separator.separator();
+        String emailList = """
+                john.boy@valid.com
+                john.boy@invalid
+                jane.doe-smith@valid.co.uk
+                jane_Doe1976@valid.co.uk
+                bob-1964@valid.net
+                bob!@invalid.com
+                elaine@valid-test.com.au
+                elaineinvalid1983@.com
+                david@valid.io
+                david@invalid..com""";
+
+        Pattern partialPattern =
+                Pattern.compile("([\\w.-]+)@(([\\w-]+\\.)+[\\w-]{2,})");
+
+        Matcher emailMatcher = partialPattern.matcher(emailList);
+        emailMatcher.results()
+                .forEach(mr -> System.out.printf("[username=%s, domain=%s]%n",
+                        mr.group(1), mr.group(2)));
+
+        Pattern emailPattern =
+                Pattern.compile("([\\w.-]+)@(([\\w-]+\\.)+[\\w-]{2,})");
+        String[] emailSamples = emailList.lines().toArray(String[]::new);
+
+        for (String email : emailSamples) {
+            Matcher eMatcher = emailPattern.matcher(email);
+            boolean matched = eMatcher.matches();
+            System.out.println(email + " is " + (matched ? "VALID" : "INVALID"));
+            if (matched) {
+                System.out.printf("[username=%s, domain=%s]%n",
+                        eMatcher.group(1), eMatcher.group(2));
+            } else {
+                System.out.println();
+            }
+
+        }
     }
 }
