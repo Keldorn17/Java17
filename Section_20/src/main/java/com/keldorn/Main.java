@@ -2,28 +2,27 @@ package main.java.com.keldorn;
 
 import main.java.com.keldorn.util.Separator;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-        fileExceptions();
-        fileAndPath();
-        pathListings();
-        fileListings();
-        fileWalker();
+        readingFiles();
+        scannerProject();
+        readingWithNIO2();
+        textProcessingChallenge();
     }
 
     private static void fileExceptions() {
@@ -196,7 +195,7 @@ public class Main {
                 Files.createDirectories(parent);
             }
             Files.writeString(path, Instant.now() +
-                    ": hello file world\n", StandardOpenOption.CREATE,
+                            ": hello file world\n", StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND);
         } catch (IOException e) {
             e.printStackTrace();
@@ -258,8 +257,8 @@ public class Main {
         Separator.separatorWithHeader("Directory Stream");
         try (var dirs = Files.newDirectoryStream(path,
                 p -> p.getFileName().toString().endsWith(".xml")
-                && Files.isRegularFile(p) && Files.size(p) > 1000
-                )) {
+                        && Files.isRegularFile(p) && Files.size(p) > 1000
+        )) {
             dirs.forEach(d -> System.out.println(Main.listDir(d)));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -351,6 +350,203 @@ public class Main {
                 folderSizes.merge(dir.getParent(), 0L, (o, n) -> o += folderSize);
             }
             return FileVisitResult.CONTINUE;
+        }
+    }
+
+    private static void readingFiles() {
+        Path path = Path.of("./files/file.txt");
+        Separator.separatorWithHeader("FileReader");
+        try (FileReader reader = new FileReader(path.toFile())) {
+            char[] block = new char[1000];
+            int data;
+            while ((data = reader.read(block)) != -1) {
+                String content = new String(block, 0, data);
+                System.out.printf("---> [%d chars] %s%n", data, content);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Separator.separatorWithHeader("BufferedReader");
+        try (BufferedReader bufferedReader = new BufferedReader(
+                new FileReader(path.toFile())
+        )) {
+            bufferedReader.lines().forEach(System.out::println);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void scannerProject() {
+        Path path = Path.of("./files/fixedWidth.txt");
+        Separator.separatorWithHeader("Scanner");
+        try (Scanner scanner = new Scanner(path)) {
+//            while (scanner.hasNextLine()) {
+//                System.out.println(scanner.nextLine());
+//            }
+//            System.out.println(scanner.delimiter());
+//            scanner.useDelimiter("$");
+//            scanner.tokens().forEach(System.out::println);
+//            scanner.findAll("[A-Za-z]{10,}")
+//                    .map(MatchResult::group)
+//                    .distinct()
+//                    .sorted()
+//                    .forEach(System.out::println);
+            var results = scanner.findAll("(.{15})(.{3})(?<dept>.{12})(.{8})(.{2}).*")
+                    .map(m -> m.group("dept").trim())
+                    .skip(1)
+                    .distinct()
+                    .sorted()
+                    .toArray(String[]::new);
+            System.out.println(Arrays.toString(results));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void readingWithNIO2() {
+        Separator.separatorWithHeader("NIO2");
+        System.out.println(System.getProperty("file.encoding"));
+        System.out.println(Charset.defaultCharset());
+
+        Separator.separator();
+        Path path = Path.of("files/fixedWidth.txt");
+        try {
+            System.out.println(new String(Files.readAllBytes(path)));
+            Separator.separator();
+            System.out.println(Files.readString(path));
+
+            Pattern p = Pattern.compile("(.{15})(.{3})(?<dept>.{12})(.{8})(.{2}).*");
+            Set<String> values = new TreeSet<>();
+            Files.readAllLines(path).forEach(s -> {
+                if (!s.startsWith("Name")) {
+                    Matcher m = p.matcher(s);
+                    if (m.matches()) {
+                        values.add(m.group(3).trim());
+                    }
+                }
+            });
+            System.out.println(values);
+
+            try (var stringStream = Files.lines(path)) {
+                var results = stringStream
+                        .skip(1)
+                        .map(p::matcher)
+                        .filter(Matcher::matches)
+                        .map(m -> m.group("dept").trim())
+                        .distinct()
+                        .sorted()
+                        .toArray(String[]::new);
+                System.out.println(Arrays.toString(results));
+            }
+
+            try (var stringStream = Files.lines(path)) {
+                var results = stringStream
+                        .skip(1)
+                        .map(p::matcher)
+                        .filter(Matcher::matches)
+                        .collect(Collectors.groupingBy(m -> m.group("dept").trim(),
+                                Collectors.counting()));
+                results.entrySet().forEach(System.out::println);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void textProcessingChallenge() {
+        Separator.separatorWithHeader("Challenge Solution 1");
+        Path path = Path.of("./files/file.txt");
+        try (Scanner scanner = new Scanner(path)) {
+            var result = scanner.findAll("[A-Za-z]{5,}")
+                    .map(MatchResult::group)
+                    .collect(Collectors.groupingBy(String::toLowerCase, Collectors.counting()));
+            result.entrySet()
+                    .stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .limit(10)
+                    .forEach(System.out::println);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Separator.separatorWithHeader("Challenge Solution 2");
+        Pattern pattern = Pattern.compile("\\w{5,}");
+        Map<String, Integer> map = new TreeMap<>();
+        try {
+            Files.readAllLines(path).forEach(s -> {
+                Matcher matcher = pattern.matcher(s);
+                while (matcher.find()) {
+                    String word = matcher.group().toLowerCase();
+                    map.merge(word, 1, Integer::sum);
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        map.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .limit(10)
+                .forEach(System.out::println);
+
+        Separator.separatorWithHeader("Challenge Solution 3");
+        try (BufferedReader br = new BufferedReader(
+                new FileReader(path.toFile()))) {
+//            System.out.printf(" %,d lines in file%n", br.lines().count());
+            Pattern p = Pattern.compile("\\p{javaWhitespace}+");
+//            System.out.printf(" %,d lines in file%n",
+//                    br.lines()
+////                            .flatMap(p::splitAsStream)
+//                            .flatMap(l -> Arrays.stream(l.split(p.toString())))
+//                            .count());
+
+//            System.out.printf(" %,d lines in file%n",
+//                    br.lines()
+//                            .mapToLong(l -> l.split(p.toString()).length)
+//                            .sum());
+            var result = br.lines()
+                    .flatMap(p::splitAsStream)
+                    .map(w -> w.replaceAll("\\p{Punct}", ""))
+                    .filter(w -> w.length() > 4)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.groupingBy(w -> w, Collectors.counting()));
+            result.entrySet().stream()
+//                    .sorted(Comparator.comparing(Map.Entry::getValue,
+//                            Comparator.reverseOrder()))
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .limit(10)
+                    .forEach(e -> System.out.println(
+                            e.getKey() + " - " + e.getValue() + " times"
+                    ));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Separator.separatorWithHeader("Challenge Solution 4");
+        String input;
+        try {
+            input = Files.readString(path);
+            input = input.replaceAll("\\p{Punct}", "");
+
+            Pattern p = Pattern.compile("\\w+");
+            Matcher m = p.matcher(input);
+            Map<String, Long> results = new HashMap<>();
+            while (m.find()) {
+                String word = m.group().toLowerCase();
+                if (word.length() > 4) {
+                    results.merge(word, 1L, Long::sum);
+                }
+            }
+            var sortedEntries = new ArrayList<>(results.entrySet());
+            sortedEntries.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+            for (int i = 0; i < Math.min(10, sortedEntries.size()); i++) {
+                var entry = sortedEntries.get(i);
+                System.out.println(entry.getKey() + " - " + entry.getValue() + " times");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
