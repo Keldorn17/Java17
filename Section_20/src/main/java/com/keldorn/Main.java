@@ -1,8 +1,11 @@
 package main.java.com.keldorn;
 
+import main.java.com.keldorn.student.Course;
+import main.java.com.keldorn.student.Student;
 import main.java.com.keldorn.util.Separator;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -19,10 +22,7 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-        readingFiles();
-        scannerProject();
-        readingWithNIO2();
-        textProcessingChallenge();
+        managingFiles();
     }
 
     private static void fileExceptions() {
@@ -548,5 +548,238 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void writingFiles() {
+        Separator.separatorWithHeader("Writing Files");
+        String header = """
+                Student id,Country Code,Enrolled Year,Age,Gender,\
+                Experienced,Course Code,Engagement Month,Engagement Year,\
+                Engagement Type
+                """;
+        Course jmc = new Course("JMC", "Java Masterclass");
+        Course pymc = new Course("PYC", "Python Masterclass");
+        List<Student> students = Stream
+                .generate(() -> Student.getRandomStudent(jmc, pymc))
+                .limit(15)
+                .toList();
+//        System.out.println(header);
+//        students.forEach(s -> s.getEngagementRecords().forEach(System.out::println));
+        Path path = Path.of("./files/students.csv");
+//        try {
+//            Files.writeString(path, header);
+//            for (Student student : students) {
+//                Files.write(path, student.getEngagementRecords(),
+//                        StandardOpenOption.APPEND);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+//        try {
+//            List<String> data = new ArrayList<>();
+//            data.add(header);
+//            for (Student student : students) {
+//                data.addAll(student.getEngagementRecords());
+//            }
+//            Files.write(path, data);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        try (BufferedWriter writer =
+                     Files.newBufferedWriter(Path.of("./files/take2.csv"))) {
+            writer.write(header);
+            int count = 0;
+            for (Student student : students) {
+                for (var record : student.getEngagementRecords()) {
+                    writer.write(record);
+                    writer.newLine();
+                    count++;
+                    if (count % 5 == 0) {
+                        Thread.sleep(2000);
+                    }
+                    if (count % 10 == 0) {
+                        writer.flush();
+                    }
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (FileWriter writer =
+                     new FileWriter("./files/take3.csv")) {
+            writer.write(header);
+            for (Student student : students) {
+                for (var record : student.getEngagementRecords()) {
+                    writer.write(record);
+                    writer.write(System.lineSeparator());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (PrintWriter writer =
+                     new PrintWriter("./files/take4.txt")) {
+            writer.write(header);
+            for (Student student : students) {
+                for (var record : student.getEngagementRecords()) {
+                    String[] recordData = record.split(",");
+                    writer.printf("%-12d%-5s%2d%4d%3d%-1s",
+                            student.getStudentId(),
+                            student.getCountry(),
+                            student.getEnrollmentYear(),
+                            student.getEnrollmentMonth(),
+                            student.getEnrollmentAge(),
+                            student.getGender());
+                    writer.printf("%-1s",
+                            (student.hasExperience() ? 'Y' : 'N'));
+                    writer.format("%-3s%10.2f%-10s%-4s%-30s",
+                            recordData[7],
+                            student.getPercentComplete(recordData[7]),
+                            recordData[8],
+                            recordData[9],
+                            recordData[10]);
+                    writer.println();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private static void writeChallenge() {
+        Separator.separatorWithHeader("Write Challenge");
+        String delimiter = "," + System.lineSeparator();
+        Course jmc = new Course("JMC", "Java Masterclass");
+        Course pymc = new Course("PYC", "Python Masterclass");
+        String students = Stream
+                .generate(() -> Student.getRandomStudent(jmc, pymc))
+                .limit(1000)
+                .map(Student::toJSON)
+                .collect(Collectors.joining(delimiter, "[", "]"));
+        System.out.println(students);
+        try {
+            Files.writeString(Path.of("./files/students.json"), students);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void managingFiles() {
+        Separator.separatorWithHeader("Managing Files");
+//        File oldFile = new File("./files/students.json");
+//        File newFile = new File("./files/student-activity.json");
+//        if (oldFile.exists()) {
+//            oldFile.renameTo(newFile);
+//            System.out.println("File renamed successfully!");
+//        } else {
+//            System.out.println("File does not exist!");
+//        }
+
+//        Path oldPath = Path.of("./files/students.json");
+//        Path newPath = Path.of("./files/student-activity.json");
+//        try {
+//            Files.createDirectories(newPath.subpath(0, newPath.getNameCount() - 1));
+//            Files.move(oldPath, newPath);
+//            System.out.println(oldPath + " moved (renamed to) --> " + newPath);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        Path fileDir = Path.of("./files");
+        Path resourceDir = Path.of("./resources");
+        try {
+            recurseDelete(resourceDir);
+            recurseCopy(fileDir, resourceDir);
+            System.out.println("Directory copied to " + resourceDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        try (BufferedReader reader = new BufferedReader(
+//                new FileReader("./files/student-activity.json"));
+//             PrintWriter writer = new PrintWriter("students-backup.json")) {
+//            reader.transferTo(writer);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        String urlString = "https://api.census.gov/data/2019/pep/charagegroups?get=NAME,POP&for=state:*";
+        URI uri = URI.create(urlString);
+        try (var urlInputStream = uri.toURL().openStream()) {
+            urlInputStream.transferTo(System.out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Path jsonpath = Path.of("./files/USPopulationByState.txt");
+        try (var reader = new InputStreamReader(uri.toURL().openStream());
+            var writer = Files.newBufferedWriter(jsonpath)) {
+            reader.transferTo(writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (var reader = new InputStreamReader(uri.toURL().openStream());
+             PrintWriter writer = new PrintWriter("./files/USPopulationByState.csv")) {
+            reader.transferTo(new Writer() {
+                @Override
+                public void write(char[] cbuf, int off, int len) throws IOException {
+                    String jsonString = new String(cbuf, off, len).trim();
+                    jsonString = jsonString.replace('[', ' ').trim();
+                    jsonString = jsonString.replaceAll("]", "");
+                    writer.write(jsonString);
+                }
+
+                @Override
+                public void flush() throws IOException {
+                    writer.flush();
+                }
+
+                @Override
+                public void close() throws IOException {
+                    writer.close();
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void recurseCopy(Path source, Path target) throws IOException {
+        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        if (Files.isDirectory(source)) {
+            try (var children = Files.list(source)) {
+                children.toList().forEach(
+                        p -> {
+                            try {
+                                Main.recurseCopy(p, target.resolve(p.getFileName()));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                );
+            }
+        }
+    }
+
+    private static void recurseDelete(Path target) throws IOException {
+        if (Files.isDirectory(target)) {
+            try (var children = Files.list(target)) {
+                children.toList().forEach(
+                        p -> {
+                            try {
+                                Main.recurseDelete(p);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                );
+            }
+        }
+        Files.deleteIfExists(target);
     }
 }
