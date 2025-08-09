@@ -1,5 +1,7 @@
 package main.java.com.keldorn;
 
+import main.java.com.keldorn.dto.Employee;
+import main.java.com.keldorn.dto.Player;
 import main.java.com.keldorn.student.Course;
 import main.java.com.keldorn.student.Student;
 import main.java.com.keldorn.util.Separator;
@@ -7,6 +9,7 @@ import main.java.com.keldorn.util.Separator;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -22,7 +25,7 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-
+        dataStreams();
     }
 
     private static void fileExceptions() {
@@ -842,15 +845,14 @@ public class Main {
     }
 
     private static final Map<Long, Long> indexedIds = new LinkedHashMap<>();
-    private static int recordsInFile = 0;
 
-    static {
-        try (RandomAccessFile rb = new RandomAccessFile("student.idx", "r")) {
-            loadIndex(rb, 0);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    static {
+//        try (RandomAccessFile rb = new RandomAccessFile("student.idx", "r")) {
+//            loadIndex(rb, 0);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private static void randomAccess() {
         Separator.separatorWithHeader("Random Access");
@@ -877,12 +879,225 @@ public class Main {
     private static void loadIndex(RandomAccessFile ra, int indexPosition) {
         try {
             ra.seek(indexPosition);
-            recordsInFile = ra.readInt();
+            int recordsInFile = ra.readInt();
             System.out.println(recordsInFile);
             for (int i = 0; i < recordsInFile; i++) {
                 indexedIds.put(ra.readLong(), ra.readLong());
             }
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void randomAccessChallenge() {
+        Separator.separatorWithHeader("Random Access Challenge");
+        try (RandomAccessFile raf = new RandomAccessFile("./files/employees.dat", "rw")) {
+            Map<Integer, Long> indexMap = new TreeMap<>();
+            int count = raf.readInt();
+            for (int i = 0; i < count; i++) {
+                int empId = raf.readInt();
+                long position = raf.readLong();
+                indexMap.put(empId, position);
+            }
+            System.out.println("Employee IDs:");
+            indexMap.keySet().forEach(System.out::println);
+
+            int targetId = indexMap.keySet().iterator().next();
+            long position = indexMap.get(targetId);
+
+            System.out.println("\nOriginal Record:");
+            printEmployee(raf, position);
+            updateSalary(raf, position, 999.99);
+            System.out.println("\nUpdated Record:");
+            printEmployee(raf, position);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void updateSalary(RandomAccessFile raf, long position, double newSalary) throws IOException {
+        raf.seek(position);
+        raf.readInt();
+        long salaryPos = raf.getFilePointer();
+        raf.writeDouble(newSalary);
+    }
+
+    private static void printEmployee(RandomAccessFile raf, long position) throws IOException {
+        raf.seek(position);
+        int id = raf.readInt();
+        double salary = raf.readDouble();
+        String firstName = readString(raf);
+        String lastName = readString(raf);
+        System.out.printf("ID: %d | Salary: %.2f | Name: %s %s%n", id, salary, firstName, lastName);
+    }
+
+    private static String readString(RandomAccessFile raf) throws IOException {
+        int length = raf.readUnsignedShort();
+        byte[] data = new byte[length];
+        raf.readFully(data);
+        return new String(data, StandardCharsets.UTF_8);
+    }
+
+    private static final Map<Integer, Long> indexIds = new HashMap<>();
+
+//    static {
+//        int recordsInFile;
+//        try (RandomAccessFile ra =
+//                new RandomAccessFile("./files/employees.dat", "r")) {
+//            recordsInFile = ra.readInt();
+//            System.out.println(recordsInFile + " records in file");
+//            for (int i = 0; i < recordsInFile; i++) {
+//                indexIds.put(ra.readInt(), ra.readLong());
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    private static void randomAccessChallenge2() {
+        Separator.separatorWithHeader("Random Access Challenge Solution 2");
+        try (RandomAccessFile ra = new RandomAccessFile("./files/employees.dat", "rw")) {
+            Scanner scanner = new Scanner(System.in);
+            List<Integer> ids = new ArrayList<>(indexIds.keySet());
+            Collections.sort(ids);
+
+            while (true) {
+                System.out.println(ids);
+                System.out.println("Enter an Employee Id or 0 to quit");
+                if (!scanner.hasNext()) break;
+                int employeeId = Integer.parseInt(scanner.nextLine());
+                if (employeeId < 1) {
+                    break;
+                }
+                if (!ids.contains(employeeId)) {
+                    continue;
+                }
+                Employee e = readRecord(ra, employeeId);
+                System.out.println("Enter new salary, nothing if no change:");
+                try {
+                    double salary = Double.parseDouble(scanner.nextLine());
+                    ra.seek(indexIds.get(employeeId) + 4);
+                    ra.writeDouble(salary);
+                    readRecord(ra, employeeId);
+                } catch (NumberFormatException ignore) {
+
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Employee readRecord(RandomAccessFile ra, int employeeId) throws IOException {
+        ra.seek(indexIds.get(employeeId));
+        int id = ra.readInt();
+        double salary = ra.readDouble();
+        String first = ra.readUTF();
+        String last = ra.readUTF();
+
+        Employee e = new Employee(id, first, last, salary);
+        System.out.println(e);
+        return e;
+    }
+
+    private static void dataStreams() {
+        Separator.separatorWithHeader("Data Streams");
+//        Path dataFile = Path.of("./files/data.dat");
+//        writeData(dataFile);
+//        readData(dataFile);
+
+        Player tim = new Player(555, "Tim", 100_000_010,
+                List.of("knife", "machete", "pistol"));
+        System.out.println(tim);
+
+        Path timFile = Path.of("./files/tim.dat");
+//        writeObject(timFile, tim);
+        Player reconstitutedTim = readObject(timFile);
+        System.out.println(reconstitutedTim);
+
+        Player joe = new Player(556, "Joe", 75, List.of("crossbow", "rifle", "pistol"));
+        Path joeFile = Path.of("./files/joe.dat");
+        writeObject(joeFile, joe);
+        Player reconstitutedJoe = readObject(joeFile);
+        System.out.println(joe);
+        System.out.println(reconstitutedJoe);
+    }
+
+    private static void writeData(Path dataFile) {
+        try (DataOutputStream dataStream =
+                new DataOutputStream(
+                        new FileOutputStream(dataFile.toFile()))) {
+            int myInt = 17;
+            long myLong = 100_000_000_000_000L;
+            boolean myBoolean = true;
+            char myChar = 'Z';
+            float myFloat = 77.7f;
+            double myDouble = 98.6;
+            String myString = "Hello World";
+
+            long position = 0;
+            dataStream.writeInt(myInt);
+            System.out.println("writeInt writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeLong(myLong);
+            System.out.println("writeLong writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeBoolean(myBoolean);
+            System.out.println("writeBoolean writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeChar(myChar);
+            System.out.println("writeChar writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeFloat(myFloat);
+            System.out.println("writeFloat writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeDouble(myDouble);
+            System.out.println("writeDouble writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+
+            dataStream.writeUTF(myString);
+            System.out.println("writeUTF writes = " + (dataStream.size() - position));
+            position = dataStream.size();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void readData(Path dataFile) {
+        try (DataInputStream dataStream = new DataInputStream(
+                Files.newInputStream(dataFile))) {
+            System.out.println("myInt = " + dataStream.readInt());
+            System.out.println("myLong = " + dataStream.readLong());
+            System.out.println("myBoolean = " + dataStream.readBoolean());
+            System.out.println("myChar = " + dataStream.readChar());
+            System.out.println("myFloat = " + dataStream.readFloat());
+            System.out.println("myDouble = " + dataStream.readDouble());
+            System.out.println("myString = " + dataStream.readUTF());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeObject(Path dataFile, Player player) {
+        try (ObjectOutputStream objStream =
+                new ObjectOutputStream(Files.newOutputStream(dataFile))) {
+            objStream.writeObject(player);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Player readObject(Path dataFile) {
+        try (ObjectInputStream objStream =
+                new ObjectInputStream(Files.newInputStream(dataFile))) {
+            return (Player) objStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
