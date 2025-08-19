@@ -1,0 +1,6 @@
+Quincy, Bob, (81)
+Quincy, Fred, (52)
+Smith, Eve, (96)
+Richardson, Donna, (23)
+Quincy, Donna, (75)
+Norton, Eve, (98)
