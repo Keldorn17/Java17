@@ -1,6 +1,7 @@
 package main.java.com.keldorn.mains;
 
 import java.sql.*;
+import java.util.Arrays;
 
 public class MusicDML {
     public static void main(String[] args) {
@@ -11,7 +12,7 @@ public class MusicDML {
 //        }
 
         try (Connection connection = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/music",
+                "jdbc:mysql://localhost:3306/music?continueBatchOnError=false",
                 System.getenv("MYSQL_USER"),
                 System.getenv("MYSQL_PASS"));
              Statement statement = connection.createStatement()
@@ -22,11 +23,17 @@ public class MusicDML {
             if (!executeSelect(statement, tableName, columnName, columnValue)) {
 //                insertRecord(statement, tableName, new String[]{columnName}, new String[]{columnValue});
                 insertArtistAlbum(statement, columnValue, columnValue);
-            }
-//            } else {
+            } else {
 //                deleteRecord(statement, tableName, columnName, columnValue);
 //                updateRecord(statement, tableName, columnName, columnValue, columnName, columnValue.toUpperCase());
-//            }
+                try {
+                    deleteArtistAlbum(connection, statement, columnValue, columnValue);
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+                executeSelect(statement, "music.albumview", "album_name", columnValue);
+                executeSelect(statement, "music.albums", "album_name", columnValue);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -50,8 +57,7 @@ public class MusicDML {
     }
 
     private static boolean executeSelect(Statement statement, String table,
-                                         String columnName, String columnValue)
-            throws SQLException {
+                                         String columnName, String columnValue) throws SQLException {
         String query = "SELECT * FROM %s WHERE %s='%s'"
                 .formatted(table, columnName, columnValue);
         var rs = statement.executeQuery(query);
@@ -62,8 +68,7 @@ public class MusicDML {
     }
 
     private static boolean insertRecord(Statement statement, String table,
-                                        String[] columnNames, String[] columnValues)
-            throws SQLException {
+                                        String[] columnNames, String[] columnValues) throws SQLException {
         String colNames = String.join(",", columnNames);
         String colValues = String.join(",", columnValues);
         String query = "INSERT INTO %s (%s) VALUES ('%s')"
@@ -137,5 +142,29 @@ public class MusicDML {
             statement.execute(songQuery);
         }
         executeSelect(statement, "music.albumview", "album_name", "Bob Dylan");
+    }
+
+    private static void deleteArtistAlbum(Connection conn, Statement statement,
+                                          String artistName, String albumName) throws SQLException {
+        try {
+            System.out.println("AUTOCOMMIT = " + conn.getAutoCommit());
+            conn.setAutoCommit(false);
+            String deleteSongs = """
+                    DELETE FROM music.songs WHERE album_id =
+                    (SELECT ALBUM_ID FROM music.albums WHERE album_name = '%s')"""
+                    .formatted(albumName);
+            String deleteAlbums = "DELETE FROM music.albums WHERE album_name='%s'".formatted(albumName);
+            String deleteArtist = "DELETE FROM music.artists WHERE artist_name='%s'".formatted(artistName);
+            statement.addBatch(deleteSongs);
+            statement.addBatch(deleteAlbums);
+            statement.addBatch(deleteArtist);
+            int[] results = statement.executeBatch();
+            System.out.println(Arrays.toString(results));
+            conn.commit();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            conn.rollback();
+        }
+        conn.setAutoCommit(true);
     }
 }
