@@ -39,7 +39,7 @@ public class MusicDML {
         }
     }
 
-    private static boolean printRecords(ResultSet resultSet) throws SQLException {
+    public static boolean printRecords(ResultSet resultSet) throws SQLException {
         boolean foundData = false;
         var meta = resultSet.getMetaData();
         for (int i = 1; i <= meta.getColumnCount(); i++) {
