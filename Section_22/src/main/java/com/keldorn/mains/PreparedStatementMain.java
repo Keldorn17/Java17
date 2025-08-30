@@ -18,7 +18,6 @@ public class PreparedStatementMain {
             "INSERT INTO music.songs (album_id, track_number, song_title) VALUES (?, ?, ?)";
 
     public static void main(String[] args) {
-
         var dataSource = new MysqlDataSource();
 
         dataSource.setServerName("localhost");
