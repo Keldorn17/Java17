@@ -1,7 +1,9 @@
 package main.java.com.keldorn.challenges.dto;
 
+import java.sql.Timestamp;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,6 +25,15 @@ public class Order {
 
     public String getOrderDate() {
         return orderDate;
+    }
+
+    public Timestamp getOrderDateTimestamp() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
+        // This would throw an error without trying to fix the incorrect date.
+        // With STRICT mode only the yyyy is an error.
+        LocalDateTime ldt = LocalDateTime.parse(orderDate, formatter);
+        return Timestamp.valueOf(ldt);
     }
 
     public void addOrderDetail(OrderDetails orderDetails) {
@@ -58,5 +69,9 @@ public class Order {
                "orderDate='" + orderDate + '\'' +
                ", orderDetailsList=" + orderDetailsList +
                '}';
+    }
+
+    public String toJSON() {
+        return orderDetailsList.toString();
     }
 }

@@ -1,4 +1,5 @@
 .env
+persistence.xml
 
 ### IntelliJ IDEA ###
 .idea

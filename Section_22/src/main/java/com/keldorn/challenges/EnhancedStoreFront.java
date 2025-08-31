@@ -41,7 +41,7 @@ public class EnhancedStoreFront {
         }
     }
 
-    private static List<Order> readOrders() {
+    public static List<Order> readOrders() {
         List<String> lines;
         try {
             lines = Files.readAllLines(ordersPath);
@@ -100,7 +100,7 @@ public class EnhancedStoreFront {
         return orderIds;
     }
 
-    private static void deleteAllOrders(Connection conn) throws SQLException {
+    public static void deleteAllOrders(Connection conn) throws SQLException {
         try (Statement statement = conn.createStatement()) {
             statement.execute("SELECT order_id FROM storefront.order");
             ResultSet rs = statement.getResultSet();
@@ -111,6 +111,9 @@ public class EnhancedStoreFront {
             for (int id : ids) {
                 statement.execute("DELETE FROM storefront.order WHERE order_id = %d".formatted(id));
             }
+            System.out.println(ids.size() + " items were deleted successfully.");
+            statement.execute("ALTER TABLE storefront.order AUTO_INCREMENT = 1");
+            statement.execute("ALTER TABLE storefront.order_details AUTO_INCREMENT = 1");
         }
     }
 }
