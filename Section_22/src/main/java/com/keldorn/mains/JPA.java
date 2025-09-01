@@ -13,17 +13,11 @@ public class JPA {
         ) {
             var transaction = entityManager.getTransaction();
             transaction.begin();
-            // Select
             Artist artist = entityManager.find(Artist.class, 204);
-//            Artist artist = new Artist(204, "Muddy Water");
             System.out.println(artist);
-            // Update
-            artist.setArtistName("Muddy Waters");
-//            entityManager.merge(artist);
-            // Delete
-//            entityManager.remove(artist);
-            // Create
-//            entityManager.persist(new Artist("Muddy Water"));
+            artist.addAlbum("The Best Of Muddy Waters");
+//            artist.removeDuplicates();
+            System.out.println(artist);
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
