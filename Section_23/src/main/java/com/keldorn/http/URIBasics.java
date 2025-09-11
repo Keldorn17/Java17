@@ -1,4 +1,4 @@
-package main.java.com.keldorn.httpProject;
+package main.java.com.keldorn.http;
 
 import java.net.MalformedURLException;
 import java.net.URI;
