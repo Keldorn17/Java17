@@ -53,7 +53,7 @@ public class ASyncClientGet {
         }
     }
 
-    private static void handleResponse(HttpResponse<Stream<String>> response) {
+    public static void handleResponse(HttpResponse<Stream<String>> response) {
         if (response.statusCode() == HTTP_OK) {
             response.body()
                     .filter(s -> s.contains("<h1>"))
