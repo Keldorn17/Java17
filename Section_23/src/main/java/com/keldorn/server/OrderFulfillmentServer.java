@@ -38,7 +38,7 @@ public class OrderFulfillmentServer {
 
                 System.out.println("Body data: " + data);
                 var parameters = parseParameters(data);
-                System.out.println(parameters);
+//                System.out.println(parameters);
 
                 if (parameters.size() == 2) {
                     LocalDateTime now = LocalDateTime.now();
@@ -57,7 +57,7 @@ public class OrderFulfillmentServer {
                                     now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), delivery.format(DateTimeFormatter.ISO_LOCAL_DATE))
                             .replaceAll("\\s", "");
 
-                    System.out.println(response);
+//                    System.out.println(response);
                 } else {
                     response = "{\"result\":\"Bad Data sent\"}";
                     responseCode = HttpURLConnection.HTTP_BAD_REQUEST;
